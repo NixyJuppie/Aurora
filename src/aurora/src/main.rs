@@ -1,6 +1,7 @@
 use helios::bevy::prelude::*;
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::create_app;
+use helios::player::Player;
 
 fn main() {
     create_app()
@@ -16,6 +17,7 @@ fn main() {
                     ..default()
                 },
                 GameCameraTarget { offset: Vec3::ZERO },
+                Player,
             ));
         })
         .run();
