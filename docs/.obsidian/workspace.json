@@ -17,7 +17,7 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Aurora.md",
+                    "file": "Character.md",
                     "mode": "source",
                     "source": false
                   }
@@ -30,7 +30,7 @@
             "type": "tabs",
             "children": [
               {
-                "id": "e9e51c455a94e511",
+                "id": "d1e4fc19538166a3",
                 "type": "leaf",
                 "state": {
                   "type": "mindmap",
@@ -106,7 +106,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Aurora.md",
+                "file": "Character.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -123,7 +123,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Aurora.md",
+                "file": "Character.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -146,7 +146,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Aurora.md"
+                "file": "Character.md"
               }
             }
           }
@@ -169,7 +169,7 @@
   },
   "active": "970b5f0f8fde9abc",
   "lastOpenFiles": [
-    "Aurora.md",
+    "Character.md",
     "Welcome.md"
   ]
 }

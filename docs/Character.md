@@ -1,0 +1,9 @@
+# Character
+## Name
+## Attributes
+### Health
+### Strength
+### Agility
+## Skills
+### Smithing
+### Mining

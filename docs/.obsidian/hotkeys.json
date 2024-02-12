@@ -1,0 +1,20 @@
+{
+  "app:open-help": [
+    {
+      "modifiers": [],
+      "key": "F12"
+    }
+  ],
+  "command-palette:open": [
+    {
+      "modifiers": [
+        "Mod"
+      ],
+      "key": "P"
+    },
+    {
+      "modifiers": [],
+      "key": "F1"
+    }
+  ]
+}
