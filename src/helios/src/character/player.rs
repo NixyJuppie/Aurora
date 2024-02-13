@@ -1,3 +1,4 @@
+use crate::character::inventory::PickupItem;
 use crate::character::CharacterLookDirection;
 use crate::input::InGameInput;
 use crate::item::WorldItem;
@@ -68,24 +69,20 @@ fn pick_up_focused_item(
     mut commands: Commands,
     mut focused_item: ResMut<FocusedWorldItem>,
     player: Query<Entity, With<Player>>,
-    mut items: Query<(&mut Transform, &mut Visibility, Entity), With<WorldItem>>,
     input: Res<InGameInput>,
 ) {
     if !input.action {
         return;
     }
 
-    let Some((mut transform, mut visibility, item)) =
-        focused_item.0.and_then(|e| items.get_mut(e).ok())
-    else {
-        return;
+    if let Some(item) = focused_item.0 {
+        let player = player.single();
+
+        commands.add(PickupItem {
+            item,
+            character: player,
+        });
+
+        focused_item.0 = None;
     };
-    let player = player.single();
-
-    commands.entity(item).remove::<WorldItem>();
-    commands.entity(player).add_child(item);
-    *visibility = Visibility::Hidden;
-    transform.translation = Vec3::ZERO;
-
-    focused_item.0 = None;
 }

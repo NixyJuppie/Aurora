@@ -1,9 +1,9 @@
-use crate::character::equipment::{CharacterArmor, CharacterWeapon};
+use crate::character::inventory::{CharacterArmor, CharacterWeapon};
 use attributes::{CharacterAgility, CharacterHealth, CharacterStrength};
 use bevy::prelude::*;
 
 pub mod attributes;
-pub mod equipment;
+pub mod inventory;
 pub mod player;
 
 #[derive(Bundle, Default, Debug)]

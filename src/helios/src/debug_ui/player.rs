@@ -1,6 +1,7 @@
 use crate::character::attributes::{
     CharacterAgility, CharacterAttribute, CharacterHealth, CharacterStrength,
 };
+use crate::character::inventory::{CharacterArmor, CharacterWeapon, DropItem, EquipItem};
 use crate::character::player::{FocusedWorldItem, Player};
 use crate::character::{CharacterLookDirection, CharacterName};
 use crate::item::{ItemName, WorldItem};
@@ -18,16 +19,18 @@ pub fn draw_player_info(
             &CharacterHealth,
             &CharacterStrength,
             &CharacterAgility,
+            &CharacterWeapon,
+            &CharacterArmor,
         ),
         With<Player>,
     >,
     focused_item: Res<FocusedWorldItem>,
-    world_items: Query<&ItemName, With<WorldItem>>,
-    mut items: Query<(&ItemName, &mut Visibility), (With<Parent>, Without<WorldItem>)>,
+    mut items: Query<&ItemName, (With<Parent>, Without<WorldItem>)>,
     mut contexts: EguiContexts,
     mut commands: Commands,
 ) {
-    let (player, children, name, look_direction, health, strength, agility) = player.single();
+    let (player, children, name, look_direction, health, strength, agility, weapon, armor) =
+        player.single();
     egui::Window::new(&name.0)
         .anchor(Align2::RIGHT_TOP, egui::Vec2::ZERO)
         .show(contexts.ctx_mut(), |ui| {
@@ -48,11 +51,16 @@ pub fn draw_player_info(
                 ui.label(look_direction.0.to_string());
                 ui.end_row();
 
+                ui.label("Weapon");
+                ui.label(get_item_name(weapon.0, &items));
+                ui.end_row();
+
+                ui.label("Armor");
+                ui.label(get_item_name(armor.0, &items));
+                ui.end_row();
+
                 ui.label("Focused item");
-                match focused_item.0.and_then(|e| world_items.get(e).ok()) {
-                    None => ui.label("None"),
-                    Some(item) => ui.label(&item.0),
-                }
+                ui.label(get_item_name(focused_item.0, &items));
             });
 
             if let Some(children) = children {
@@ -60,15 +68,19 @@ pub fn draw_player_info(
                     ui.heading("Items");
                     ui.end_row();
                     for child in children.iter() {
-                        if let Ok((name, mut visibility)) = items.get_mut(*child) {
+                        if let Ok(name) = items.get_mut(*child) {
                             ui.label(&name.0);
                             if ui.button("Equip").clicked() {
-                                // todo
+                                commands.add(EquipItem {
+                                    item: *child,
+                                    character: player,
+                                })
                             };
                             if ui.button("Drop").clicked() {
-                                commands.entity(player).remove_children(&[*child]);
-                                commands.entity(*child).insert(WorldItem);
-                                *visibility = Visibility::Inherited;
+                                commands.add(DropItem {
+                                    item: *child,
+                                    character: player,
+                                })
                             };
                             ui.end_row();
                         }
@@ -76,6 +88,19 @@ pub fn draw_player_info(
                 });
             }
         });
+}
+
+fn get_item_name(
+    item: Option<Entity>,
+    items: &Query<&ItemName, (With<Parent>, Without<WorldItem>)>,
+) -> String {
+    match item {
+        Some(item) => items
+            .get(item)
+            .map(|i| i.0.clone())
+            .unwrap_or("Unknown".to_string()),
+        None => "None".to_string(),
+    }
 }
 
 fn draw_attribute(ui: &mut Ui, color: Color32, value: &CharacterAttribute) {

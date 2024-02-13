@@ -19,3 +19,9 @@ pub struct WorldItem;
 
 #[derive(Component, Default, Debug)]
 pub struct ItemName(pub String);
+
+#[derive(Component, Debug, Clone)]
+pub enum ItemEquipSlot {
+    Weapon,
+    Armor,
+}
