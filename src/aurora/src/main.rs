@@ -1,7 +1,7 @@
 use helios::bevy::prelude::*;
-use helios::camera::{GameCamera, GameCameraTarget};
+use helios::character::player::Player;
 use helios::character::{CharacterBundle, CharacterName};
-use helios::player::Player;
+use helios::item::{ItemBundle, ItemName, WorldItem};
 use helios::HeliosPlugins;
 
 const GAME_NAME: &str = "Aurora";
@@ -25,22 +25,33 @@ fn main() {
 }
 
 fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((Camera2dBundle::default(), GameCamera));
+    commands.spawn(Camera2dBundle::default());
     commands.spawn((
         CharacterBundle {
             name: CharacterName("Player".to_string()),
-            ..default()
-        },
-        SpriteBundle {
-            texture: asset_server.load("Player.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(100.0, 100.0)),
                 color: Color::GOLD,
                 ..default()
             },
+            texture: asset_server.load("Player.png"),
             ..default()
         },
-        GameCameraTarget { offset: Vec3::ZERO },
         Player,
+    ));
+
+    commands.spawn((
+        ItemBundle {
+            name: ItemName("Sword".to_string()),
+            transform: Transform::from_xyz(250.0, 0.0, 0.0),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(50.0, 50.0)),
+                color: Color::GOLD,
+                ..default()
+            },
+            texture: asset_server.load("Sword.png"),
+            ..default()
+        },
+        WorldItem,
     ));
 }

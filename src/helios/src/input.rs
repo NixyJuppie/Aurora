@@ -13,50 +13,83 @@ impl Plugin for InputPlugin {
 #[derive(Resource, Default)]
 pub struct InGameInput {
     pub movement: Vec2,
+    pub action: bool,
 }
 
 fn read_input(
     mut input: ResMut<InGameInput>,
-    keyboard: Res<Input<KeyCode>>,
+    keys: Res<Input<KeyCode>>,
+    buttons: Res<Input<GamepadButton>>,
     gamepads: Res<Gamepads>,
     gamepad_axes: Res<Axis<GamepadAxis>>,
 ) {
-    input.movement = read_movement_input(&keyboard, &gamepads, &gamepad_axes);
+    let movement = read_keyboard_vec2(KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D, &keys)
+        + read_gamepad_vec2(
+            GamepadAxisType::LeftStickX,
+            GamepadAxisType::LeftStickY,
+            &gamepads,
+            &gamepad_axes,
+        );
+
+    input.movement = if movement.length() > 1.0 {
+        movement.normalize()
+    } else {
+        movement
+    };
+
+    input.action = keys.pressed(KeyCode::E)
+        || gamepads
+            .iter()
+            .map(|g| buttons.pressed(GamepadButton::new(g, GamepadButtonType::South)))
+            .any(|v| v)
 }
 
-fn read_movement_input(
-    keyboard: &Res<Input<KeyCode>>,
+fn read_gamepad_vec2(
+    axis_x: GamepadAxisType,
+    axis_y: GamepadAxisType,
     gamepads: &Res<Gamepads>,
     gamepad_axes: &Res<Axis<GamepadAxis>>,
 ) -> Vec2 {
-    let mut movement = Vec2::ZERO;
-
-    if keyboard.pressed(KeyCode::W) {
-        movement.y += 1.0;
-    }
-    if keyboard.pressed(KeyCode::S) {
-        movement.y -= 1.0;
-    }
-    if keyboard.pressed(KeyCode::A) {
-        movement.x -= 1.0;
-    }
-    if keyboard.pressed(KeyCode::D) {
-        movement.x += 1.0;
-    }
-
     const DEAD_ZONE: f32 = 0.1;
+    let mut value = Vec2::ZERO;
+
     for gamepad in gamepads.iter() {
-        if let Some(x) = gamepad_axes.get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickX)) {
+        if let Some(x) = gamepad_axes.get(GamepadAxis::new(gamepad, axis_x)) {
             if x.abs() >= DEAD_ZONE {
-                movement.x += x;
+                value.x += x;
             }
         }
-        if let Some(y) = gamepad_axes.get(GamepadAxis::new(gamepad, GamepadAxisType::LeftStickY)) {
+        if let Some(y) = gamepad_axes.get(GamepadAxis::new(gamepad, axis_y)) {
             if y.abs() >= DEAD_ZONE {
-                movement.y += y;
+                value.y += y;
             }
         }
     }
 
-    movement
+    value
+}
+
+fn read_keyboard_vec2(
+    up: KeyCode,
+    down: KeyCode,
+    left: KeyCode,
+    right: KeyCode,
+    keys: &Res<Input<KeyCode>>,
+) -> Vec2 {
+    let mut value = Vec2::ZERO;
+
+    if keys.pressed(up) {
+        value.y += 1.0;
+    }
+    if keys.pressed(down) {
+        value.y -= 1.0;
+    }
+    if keys.pressed(left) {
+        value.x -= 1.0;
+    }
+    if keys.pressed(right) {
+        value.x += 1.0;
+    }
+
+    value
 }

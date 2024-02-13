@@ -1,20 +1,21 @@
+#![allow(clippy::type_complexity)]
+
 pub use bevy;
+
 use bevy::app::PluginGroupBuilder;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_screen_diagnostics::*;
-
-use camera::CameraPlugin;
+use character::player::PlayerPlugin;
 use debug_ui::DebugUiPlugin;
 use input::InputPlugin;
-use player::PlayerPlugin;
 use schedule::SchedulePlugin;
 
-pub mod camera;
+mod debug_ui;
+
 pub mod character;
-pub mod debug_ui;
 pub mod input;
-pub mod player;
+pub mod item;
 pub mod schedule;
 
 pub struct HeliosPlugins;
@@ -23,7 +24,6 @@ impl PluginGroup for HeliosPlugins {
         PluginGroupBuilder::start::<Self>()
             .add(SchedulePlugin)
             .add(InputPlugin)
-            .add(CameraPlugin)
             .add(PlayerPlugin)
             .add(EguiPlugin)
             .add(DebugUiPlugin)
