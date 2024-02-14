@@ -23,8 +23,9 @@ impl Command for Attack {
         let range = world.entity(weapon).get::<WeaponRange>().unwrap().0;
 
         let hit_entities = world.query_filtered::<(&GlobalTransform, Entity), (With<CharacterHealth>, With<CharacterArmor>)>()
-            .iter(world).filter(|(target_transform, _)| {
-            let direction = target_transform.translation() - attacker_translation;
+            .iter(world)
+            .filter(|(target_transform, _)| {
+                let direction = target_transform.translation() - attacker_translation;
                 if direction.length() <= range {
                     let angle = direction.angle_between(Vec3::new(
                         attacker_direction.x,
@@ -34,8 +35,10 @@ impl Command for Attack {
 
                     return angle.to_degrees().abs() <= ATTACK_ANGLE;
                 }
-            false
-        }).map(|e| e.1).collect::<Vec<Entity>>();
+                false
+            })
+            .map(|e| e.1)
+            .collect::<Vec<Entity>>();
 
         for target in hit_entities {
             let armor = world.get::<CharacterArmor>(target).unwrap().0;
