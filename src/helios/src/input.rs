@@ -47,7 +47,7 @@ fn read_input(
     input.attack = keys.just_pressed(KeyCode::Space)
         || gamepads
             .iter()
-            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::LeftThumb)))
+            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::RightTrigger)))
             .any(|v| v);
 }
 

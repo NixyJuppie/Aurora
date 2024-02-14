@@ -56,7 +56,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         WeaponBundle {
             name: ItemName("Claymore".to_string()),
             damage: WeaponDamage(10),
-            range: WeaponRange(100.0),
+            range: WeaponRange(200.0),
             transform: Transform::from_xyz(250.0, 0.0, 0.0),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(50.0, 50.0)),

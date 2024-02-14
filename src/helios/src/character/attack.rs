@@ -56,7 +56,10 @@ impl Command for Attack {
                     "Hit character for {}, remaining health: {}",
                     final_damage, health.0.current
                 );
-                // todo: handle death
+
+                if health.0.current == 0 {
+                    world.entity_mut(target).despawn_recursive();
+                }
             }
         }
     }
