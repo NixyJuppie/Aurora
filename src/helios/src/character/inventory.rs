@@ -1,4 +1,4 @@
-use crate::item::{ItemEquipSlot, ItemName, WorldItem};
+use crate::item::{ItemEquipSlot, WorldItem};
 use bevy::ecs::system::Command;
 use bevy::prelude::*;
 
@@ -7,35 +7,6 @@ pub struct CharacterWeapon(pub Option<Entity>);
 
 #[derive(Component, Default, Debug)]
 pub struct CharacterArmor(pub Option<Entity>);
-
-pub struct EquipItem {
-    pub item: Entity,
-    pub character: Entity,
-}
-impl Command for EquipItem {
-    fn apply(self, world: &mut World) {
-        let item = world.entity(self.item);
-        let Some(slot) = item.get::<ItemEquipSlot>().cloned() else {
-            warn!(
-                "Cannot equip item {} because it does not have defined slot",
-                item.get::<ItemName>()
-                    .map(|i| i.0.as_str())
-                    .unwrap_or("<???>")
-            );
-            return;
-        };
-
-        let mut character = world.entity_mut(self.character);
-        match slot {
-            ItemEquipSlot::Weapon => {
-                character.get_mut::<CharacterWeapon>().unwrap().0 = Some(self.item)
-            }
-            ItemEquipSlot::Armor => {
-                character.get_mut::<CharacterArmor>().unwrap().0 = Some(self.item)
-            }
-        }
-    }
-}
 
 pub struct PickupItem {
     pub item: Entity,
@@ -61,10 +32,83 @@ impl Command for DropItem {
     fn apply(self, world: &mut World) {
         let mut character = world.entity_mut(self.character);
         character.remove_children(&[self.item]);
-        // todo: unequip item
+
+        UnequipItem {
+            item: self.item,
+            character: self.character,
+        }
+        .apply(world);
 
         let mut item = world.entity_mut(self.item);
         item.insert(WorldItem);
         *item.get_mut::<Visibility>().unwrap() = Visibility::Inherited;
+    }
+}
+
+pub struct EquipItem {
+    pub item: Entity,
+    pub character: Entity,
+}
+impl Command for EquipItem {
+    fn apply(self, world: &mut World) {
+        let item = world.entity(self.item);
+        let Some(slot) = item.get::<ItemEquipSlot>().cloned() else {
+            warn!("Cannot equip item because it does not have defined slot");
+            return;
+        };
+
+        let mut character = world.entity_mut(self.character);
+        match slot {
+            ItemEquipSlot::Weapon => match character.get_mut::<CharacterWeapon>() {
+                Some(mut weapon) => weapon.0 = Some(self.item),
+                None => warn!(
+                    "Cannot equip weapon because character does not have CharacterWeapon component"
+                ),
+            },
+            ItemEquipSlot::Armor => match character.get_mut::<CharacterArmor>() {
+                Some(mut armor) => armor.0 = Some(self.item),
+                None => warn!(
+                    "Cannot equip armor because character does not have CharacterArmor component"
+                ),
+            },
+        }
+    }
+}
+
+pub struct UnequipItem {
+    pub item: Entity,
+    pub character: Entity,
+}
+impl Command for UnequipItem {
+    fn apply(self, world: &mut World) {
+        let item = world.entity(self.item);
+        let Some(slot) = item.get::<ItemEquipSlot>().cloned() else {
+            warn!("Cannot unequip item because it does not have defined slot");
+            return;
+        };
+
+        let mut character = world.entity_mut(self.character);
+        match slot {
+            ItemEquipSlot::Weapon => match character.get_mut::<CharacterWeapon>() {
+                Some(mut weapon) => {
+                    if weapon.0.is_some_and(|e| e == self.item) {
+                        weapon.0 = None;
+                    }
+                },
+                None => warn!(
+                    "Cannot unequip weapon because character does not have CharacterWeapon component"
+                ),
+            },
+            ItemEquipSlot::Armor => match character.get_mut::<CharacterArmor>() {
+                Some(mut armor) => {
+                    if armor.0.is_some_and(|e| e == self.item) {
+                        armor.0 = None;
+                    }
+                },
+                None => warn!(
+                    "Cannot unequip armor because character does not have CharacterArmor component"
+                ),
+            },
+        }
     }
 }

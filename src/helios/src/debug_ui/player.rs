@@ -25,7 +25,8 @@ pub fn draw_player_info(
         With<Player>,
     >,
     focused_item: Res<FocusedWorldItem>,
-    mut items: Query<&ItemName, (With<Parent>, Without<WorldItem>)>,
+    world_items: Query<&ItemName, With<WorldItem>>,
+    items: Query<&ItemName, (With<Parent>, Without<WorldItem>)>,
     mut contexts: EguiContexts,
     mut commands: Commands,
 ) {
@@ -60,7 +61,7 @@ pub fn draw_player_info(
                 ui.end_row();
 
                 ui.label("Focused item");
-                ui.label(get_item_name(focused_item.0, &items));
+                ui.label(get_world_item_name(focused_item.0, &world_items));
             });
 
             if let Some(children) = children {
@@ -68,7 +69,7 @@ pub fn draw_player_info(
                     ui.heading("Items");
                     ui.end_row();
                     for child in children.iter() {
-                        if let Ok(name) = items.get_mut(*child) {
+                        if let Ok(name) = items.get(*child) {
                             ui.label(&name.0);
                             if ui.button("Equip").clicked() {
                                 commands.add(EquipItem {
@@ -90,6 +91,20 @@ pub fn draw_player_info(
         });
 }
 
+// noinspection DuplicatedCode
+// todo: replace with query transmutation in bevy 0.13
+fn get_world_item_name(item: Option<Entity>, items: &Query<&ItemName, With<WorldItem>>) -> String {
+    match item {
+        Some(item) => items
+            .get(item)
+            .map(|i| i.0.clone())
+            .unwrap_or("Unknown".to_string()),
+        None => "None".to_string(),
+    }
+}
+
+// noinspection DuplicatedCode
+// todo: replace with query transmutation in bevy 0.13
 fn get_item_name(
     item: Option<Entity>,
     items: &Query<&ItemName, (With<Parent>, Without<WorldItem>)>,
