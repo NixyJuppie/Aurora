@@ -13,7 +13,8 @@ impl Plugin for InputPlugin {
 #[derive(Resource, Default)]
 pub struct InGameInput {
     pub movement: Vec2,
-    pub action: bool,
+    pub pickup: bool,
+    pub attack: bool,
 }
 
 fn read_input(
@@ -37,11 +38,17 @@ fn read_input(
         movement
     };
 
-    input.action = keys.pressed(KeyCode::E)
+    input.pickup = keys.pressed(KeyCode::E)
         || gamepads
             .iter()
             .map(|g| buttons.pressed(GamepadButton::new(g, GamepadButtonType::South)))
-            .any(|v| v)
+            .any(|v| v);
+
+    input.attack = keys.just_pressed(KeyCode::Space)
+        || gamepads
+            .iter()
+            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::LeftThumb)))
+            .any(|v| v);
 }
 
 fn read_gamepad_vec2(

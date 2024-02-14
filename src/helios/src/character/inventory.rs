@@ -32,6 +32,7 @@ impl Command for DropItem {
     fn apply(self, world: &mut World) {
         let mut character = world.entity_mut(self.character);
         character.remove_children(&[self.item]);
+        let target_translation = character.get::<Transform>().unwrap().translation;
 
         UnequipItem {
             item: self.item,
@@ -42,6 +43,7 @@ impl Command for DropItem {
         let mut item = world.entity_mut(self.item);
         item.insert(WorldItem);
         *item.get_mut::<Visibility>().unwrap() = Visibility::Inherited;
+        item.get_mut::<Transform>().unwrap().translation = target_translation;
     }
 }
 

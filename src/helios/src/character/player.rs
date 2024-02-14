@@ -1,3 +1,4 @@
+use crate::character::attack::Attack;
 use crate::character::inventory::PickupItem;
 use crate::character::CharacterLookDirection;
 use crate::input::InGameInput;
@@ -12,7 +13,8 @@ impl Plugin for PlayerPlugin {
         app.init_resource::<FocusedWorldItem>();
         app.add_systems(
             Update,
-            (move_player, focus_world_item, pick_up_focused_item).in_set(InGameSet::EntityUpdate),
+            (move_player, focus_world_item, pick_up_focused_item, attack)
+                .in_set(InGameSet::EntityUpdate),
         );
     }
 }
@@ -71,7 +73,7 @@ fn pick_up_focused_item(
     player: Query<Entity, With<Player>>,
     input: Res<InGameInput>,
 ) {
-    if !input.action {
+    if !input.pickup {
         return;
     }
 
@@ -85,4 +87,13 @@ fn pick_up_focused_item(
 
         focused_item.0 = None;
     };
+}
+
+fn attack(mut commands: Commands, player: Query<Entity, With<Player>>, input: Res<InGameInput>) {
+    if !input.attack {
+        return;
+    }
+
+    let player = player.single();
+    commands.add(Attack { character: player });
 }
