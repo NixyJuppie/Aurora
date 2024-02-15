@@ -41,16 +41,27 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         Player,
     ));
 
-    commands.spawn((CharacterBundle {
-        name: CharacterName("Enemy".to_string()),
-        transform: Transform::from_xyz(400.0, 0.0, 0.0),
+    commands.spawn(CharacterBundle {
+        name: CharacterName("Enemy1".to_string()),
+        transform: Transform::from_xyz(400.0, 100.0, 0.0),
         sprite: Sprite {
             custom_size: Some(Vec2::new(100.0, 100.0)),
             ..default()
         },
         texture: asset_server.load("Enemy.png"),
         ..default()
-    },));
+    });
+
+    commands.spawn(CharacterBundle {
+        name: CharacterName("Enemy2".to_string()),
+        transform: Transform::from_xyz(400.0, -100.0, 0.0),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(100.0, 100.0)),
+            ..default()
+        },
+        texture: asset_server.load("Enemy.png"),
+        ..default()
+    });
 
     commands.spawn((
         WeaponBundle {
@@ -70,7 +81,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn((
         ArmorBundle {
-            name: ItemName("Aegis".to_string()),
+            name: ItemName("Chestplate".to_string()),
             defense: ArmorDefense(10),
             transform: Transform::from_xyz(150.0, -200.0, 0.0),
             sprite: Sprite {

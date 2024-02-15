@@ -1,9 +1,10 @@
-use crate::character::inventory::{CharacterArmor, CharacterWeapon};
 use attributes::{CharacterAgility, CharacterHealth, CharacterStrength};
 use bevy::prelude::*;
+use inventory::{CharacterArmor, CharacterWeapon};
 
 mod attack;
 pub mod attributes;
+mod damage;
 pub mod inventory;
 pub mod player;
 

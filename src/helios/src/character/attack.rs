@@ -1,4 +1,5 @@
 use crate::character::attributes::CharacterHealth;
+use crate::character::damage::SpawnDamageIndicator;
 use crate::character::inventory::{CharacterArmor, CharacterWeapon};
 use crate::character::CharacterLookDirection;
 use crate::item::{ArmorDefense, WeaponDamage, WeaponRange};
@@ -51,6 +52,12 @@ impl Command for Attack {
                 "Attack damage: {} (Weapon) - {} (Armor) = {}",
                 damage, defense, final_damage
             );
+
+            SpawnDamageIndicator {
+                target,
+                damage: final_damage,
+            }
+            .apply(world);
 
             if final_damage != 0 {
                 let mut health = world.get_mut::<CharacterHealth>(target).unwrap();
