@@ -8,12 +8,14 @@ pub struct CharacterWeapon(pub Option<Entity>);
 #[derive(Component, Default, Debug)]
 pub struct CharacterArmor(pub Option<Entity>);
 
+#[derive(Debug)]
 pub struct PickupItem {
     pub item: Entity,
     pub character: Entity,
 }
 impl Command for PickupItem {
     fn apply(self, world: &mut World) {
+        info!("{:?}", self);
         let mut character = world.entity_mut(self.character);
         character.add_child(self.item);
 
@@ -24,12 +26,14 @@ impl Command for PickupItem {
     }
 }
 
+#[derive(Debug)]
 pub struct DropItem {
     pub item: Entity,
     pub character: Entity,
 }
 impl Command for DropItem {
     fn apply(self, world: &mut World) {
+        info!("{:?}", self);
         let mut character = world.entity_mut(self.character);
         character.remove_children(&[self.item]);
         let target_translation = character.get::<Transform>().unwrap().translation;
@@ -47,12 +51,14 @@ impl Command for DropItem {
     }
 }
 
+#[derive(Debug)]
 pub struct EquipItem {
     pub item: Entity,
     pub character: Entity,
 }
 impl Command for EquipItem {
     fn apply(self, world: &mut World) {
+        info!("{:?}", self);
         let item = world.entity(self.item);
         let Some(slot) = item.get::<ItemEquipSlot>().cloned() else {
             warn!("Cannot equip item because it does not have defined slot");
@@ -77,12 +83,14 @@ impl Command for EquipItem {
     }
 }
 
+#[derive(Debug)]
 pub struct UnequipItem {
     pub item: Entity,
     pub character: Entity,
 }
 impl Command for UnequipItem {
     fn apply(self, world: &mut World) {
+        info!("{:?}", self);
         let item = world.entity(self.item);
         let Some(slot) = item.get::<ItemEquipSlot>().cloned() else {
             warn!("Cannot unequip item because it does not have defined slot");

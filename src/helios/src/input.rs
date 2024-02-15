@@ -38,10 +38,10 @@ fn read_input(
         movement
     };
 
-    input.pickup = keys.pressed(KeyCode::E)
+    input.pickup = keys.just_pressed(KeyCode::E)
         || gamepads
             .iter()
-            .map(|g| buttons.pressed(GamepadButton::new(g, GamepadButtonType::South)))
+            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::South)))
             .any(|v| v);
 
     input.attack = keys.just_pressed(KeyCode::Space)

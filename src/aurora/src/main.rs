@@ -1,4 +1,5 @@
 use helios::bevy::prelude::*;
+use helios::character::loot::CharacterLoot;
 use helios::character::player::Player;
 use helios::character::{CharacterBundle, CharacterName};
 use helios::item::{
@@ -52,6 +53,21 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     });
 
+    let chestplate = commands
+        .spawn(ArmorBundle {
+            name: ItemName("Chestplate".to_string()),
+            defense: ArmorDefense(10),
+            transform: Transform::from_xyz(150.0, -200.0, 0.0),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(50.0, 50.0)),
+                ..default()
+            },
+            texture: asset_server.load("Armor.png"),
+            visibility: Visibility::Hidden,
+            ..default()
+        })
+        .id();
+
     commands.spawn(CharacterBundle {
         name: CharacterName("Enemy2".to_string()),
         transform: Transform::from_xyz(400.0, -100.0, 0.0),
@@ -60,6 +76,7 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         texture: asset_server.load("Enemy.png"),
+        loot: CharacterLoot::Fixed(vec![chestplate]),
         ..default()
     });
 
@@ -74,21 +91,6 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             },
             texture: asset_server.load("Sword.png"),
-            ..default()
-        },
-        WorldItem,
-    ));
-
-    commands.spawn((
-        ArmorBundle {
-            name: ItemName("Chestplate".to_string()),
-            defense: ArmorDefense(10),
-            transform: Transform::from_xyz(150.0, -200.0, 0.0),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(50.0, 50.0)),
-                ..default()
-            },
-            texture: asset_server.load("Armor.png"),
             ..default()
         },
         WorldItem,

@@ -1,11 +1,13 @@
 use attributes::{CharacterAgility, CharacterHealth, CharacterStrength};
 use bevy::prelude::*;
 use inventory::{CharacterArmor, CharacterWeapon};
+use loot::CharacterLoot;
 
 mod attack;
 pub mod attributes;
-mod damage;
+pub mod damage;
 pub mod inventory;
+pub mod loot;
 pub mod player;
 
 #[derive(Bundle, Default, Debug)]
@@ -19,6 +21,7 @@ pub struct CharacterBundle {
 
     pub weapon: CharacterWeapon,
     pub armor: CharacterArmor,
+    pub loot: CharacterLoot,
 
     pub visibility: Visibility,
     pub inherited_visibility: InheritedVisibility,
