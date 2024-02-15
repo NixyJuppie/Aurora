@@ -21,6 +21,12 @@ pub struct WorldItem;
 #[derive(Component, Default, Debug)]
 pub struct ItemName(pub String);
 
+impl PartialEq<str> for ItemName {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
 #[derive(Component, Debug, Clone)]
 pub enum ItemEquipSlot {
     Weapon,

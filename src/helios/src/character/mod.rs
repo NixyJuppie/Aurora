@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use inventory::{CharacterArmor, CharacterWeapon};
 use loot::CharacterLoot;
 
-mod attack;
+pub mod attack;
 pub mod attributes;
 pub mod damage;
 pub mod inventory;
@@ -35,6 +35,12 @@ pub struct CharacterBundle {
 
 #[derive(Component, Default, Debug)]
 pub struct CharacterName(pub String);
+
+impl PartialEq<str> for CharacterName {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
 
 #[derive(Component, Default, Debug)]
 pub struct CharacterLookDirection(pub Vec2);

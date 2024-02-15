@@ -68,17 +68,19 @@ fn spawn(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .id();
 
-    commands.spawn(CharacterBundle {
-        name: CharacterName("Enemy2".to_string()),
-        transform: Transform::from_xyz(400.0, -100.0, 0.0),
-        sprite: Sprite {
-            custom_size: Some(Vec2::new(100.0, 100.0)),
+    commands
+        .spawn(CharacterBundle {
+            name: CharacterName("Enemy2".to_string()),
+            transform: Transform::from_xyz(400.0, -100.0, 0.0),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(100.0, 100.0)),
+                ..default()
+            },
+            texture: asset_server.load("Enemy.png"),
+            loot: CharacterLoot::Fixed(vec![chestplate]),
             ..default()
-        },
-        texture: asset_server.load("Enemy.png"),
-        loot: CharacterLoot::Fixed(vec![chestplate]),
-        ..default()
-    });
+        })
+        .add_child(chestplate);
 
     commands.spawn((
         WeaponBundle {
