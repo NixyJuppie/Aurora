@@ -1,102 +1,115 @@
-use crate::schedule::InGameSet;
+use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 
 pub struct InputPlugin;
-
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<InGameInput>();
-        app.add_systems(Update, read_input.in_set(InGameSet::UserInput));
+        app.init_resource::<GameplayInput>();
+        app.add_systems(Update, update_gameplay_input);
     }
 }
 
-#[derive(Resource, Default)]
-pub struct InGameInput {
-    pub movement: Vec2,
-    pub pickup: bool,
-    pub attack: bool,
+#[derive(Resource, Default, Debug)]
+pub struct GameplayInput {
+    pub movement: Option<Vec2>,
+    pub look: Option<Vec2>,
 }
 
-fn read_input(
-    mut input: ResMut<InGameInput>,
-    keys: Res<Input<KeyCode>>,
-    buttons: Res<Input<GamepadButton>>,
+fn update_gameplay_input(
+    mut input: ResMut<GameplayInput>,
     gamepads: Res<Gamepads>,
     gamepad_axes: Res<Axis<GamepadAxis>>,
+    keyboard: Res<Input<KeyCode>>,
+    mouse_motion: EventReader<MouseMotion>,
 ) {
-    let movement = read_keyboard_vec2(KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D, &keys)
-        + read_gamepad_vec2(
-            GamepadAxisType::LeftStickX,
-            GamepadAxisType::LeftStickY,
+    input.movement = merge_inputs(
+        read_gamepad_vec2(
             &gamepads,
             &gamepad_axes,
-        );
+            GamepadAxisType::LeftStickX,
+            GamepadAxisType::LeftStickY,
+        ),
+        read_keyboard_vec2(&keyboard, KeyCode::W, KeyCode::S, KeyCode::A, KeyCode::D),
+    );
 
-    input.movement = if movement.length() > 1.0 {
-        movement.normalize()
+    input.look = merge_inputs(
+        read_gamepad_vec2(
+            &gamepads,
+            &gamepad_axes,
+            GamepadAxisType::RightStickX,
+            GamepadAxisType::RightStickY,
+        ),
+        read_mouse_motion(mouse_motion).map(|v| Vec2::new(v.x, -v.y)),
+    );
+}
+
+fn merge_inputs(first: Option<Vec2>, second: Option<Vec2>) -> Option<Vec2> {
+    if first.is_some() {
+        first
     } else {
-        movement
-    };
-
-    input.pickup = keys.just_pressed(KeyCode::E)
-        || gamepads
-            .iter()
-            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::South)))
-            .any(|v| v);
-
-    input.attack = keys.just_pressed(KeyCode::Space)
-        || gamepads
-            .iter()
-            .map(|g| buttons.just_pressed(GamepadButton::new(g, GamepadButtonType::RightTrigger)))
-            .any(|v| v);
+        second
+    }
 }
 
 fn read_gamepad_vec2(
-    axis_x: GamepadAxisType,
-    axis_y: GamepadAxisType,
     gamepads: &Res<Gamepads>,
-    gamepad_axes: &Res<Axis<GamepadAxis>>,
-) -> Vec2 {
+    gamepad_axis: &Res<Axis<GamepadAxis>>,
+    horizontal: GamepadAxisType,
+    vertical: GamepadAxisType,
+) -> Option<Vec2> {
     const DEAD_ZONE: f32 = 0.1;
-    let mut value = Vec2::ZERO;
 
     for gamepad in gamepads.iter() {
-        if let Some(x) = gamepad_axes.get(GamepadAxis::new(gamepad, axis_x)) {
-            if x.abs() >= DEAD_ZONE {
-                value.x += x;
-            }
-        }
-        if let Some(y) = gamepad_axes.get(GamepadAxis::new(gamepad, axis_y)) {
-            if y.abs() >= DEAD_ZONE {
-                value.y += y;
+        if let (Some(x), Some(y)) = (
+            gamepad_axis.get(GamepadAxis::new(gamepad, horizontal)),
+            gamepad_axis.get(GamepadAxis::new(gamepad, vertical)),
+        ) {
+            let value = Vec2::new(x, y);
+            if value.length() >= DEAD_ZONE {
+                return Some(value);
             }
         }
     }
 
-    value
+    None
 }
 
 fn read_keyboard_vec2(
+    keyboard: &Res<Input<KeyCode>>,
     up: KeyCode,
     down: KeyCode,
     left: KeyCode,
     right: KeyCode,
-    keys: &Res<Input<KeyCode>>,
-) -> Vec2 {
+) -> Option<Vec2> {
     let mut value = Vec2::ZERO;
 
-    if keys.pressed(up) {
+    if keyboard.pressed(up) {
         value.y += 1.0;
     }
-    if keys.pressed(down) {
+    if keyboard.pressed(down) {
         value.y -= 1.0;
     }
-    if keys.pressed(left) {
+    if keyboard.pressed(left) {
         value.x -= 1.0;
     }
-    if keys.pressed(right) {
+    if keyboard.pressed(right) {
         value.x += 1.0;
     }
 
-    value
+    if value == Vec2::ZERO {
+        None
+    } else {
+        Some(value)
+    }
+}
+
+fn read_mouse_motion(mut motion: EventReader<MouseMotion>) -> Option<Vec2> {
+    const MOUSE_SPEED: f32 = 0.2;
+    let value: Vec2 = motion.read().map(|e| e.delta).sum();
+
+    if value != Vec2::ZERO {
+        Some(value * MOUSE_SPEED)
+    } else {
+        None
+    }
 }
