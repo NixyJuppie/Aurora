@@ -3,7 +3,9 @@ use helios::bevy_rapier3d::geometry::Collider;
 use helios::bevy_rapier3d::prelude::{LockedAxes, RigidBody};
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::player::PlayerBundle;
-use helios::HeliosPlugins;
+use helios::character::CharacterBundle;
+use helios::item::{ItemBundle, ItemName};
+use helios::{HeliosDebugPlugins, HeliosPlugins};
 
 const GAME_NAME: &str = "Aurora";
 
@@ -16,7 +18,7 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(HeliosPlugins)
+        .add_plugins((HeliosPlugins, HeliosDebugPlugins))
         .add_systems(Startup, spawn)
         .run();
 }
@@ -51,6 +53,25 @@ fn spawn(
             offset: Vec3::new(0.0, 4.0, 10.0),
         },
     ));
+
+    let item = commands
+        .spawn(ItemBundle {
+            name: ItemName("Test".to_string()),
+        })
+        .id();
+    commands
+        .spawn((
+            CharacterBundle {
+                rigidbody: RigidBody::Dynamic,
+                collider: Collider::capsule_y(0.5, 0.5),
+                mesh: meshes.add(shape::Capsule::default().into()),
+                material: materials.add(Color::RED.into()),
+                transform: Transform::from_xyz(-2.0, 2.0, -5.0),
+                ..default()
+            },
+            LockedAxes::ROTATION_LOCKED,
+        ))
+        .add_child(item);
 
     spawn_world(commands, materials, meshes);
 }

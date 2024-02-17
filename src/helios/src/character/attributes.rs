@@ -3,7 +3,7 @@ use smart_default::SmartDefault;
 use std::marker::PhantomData;
 
 #[derive(Component, SmartDefault, Debug)]
-pub struct CharacterAttribute<A> {
+pub struct CharacterAttribute<A: Attribute> {
     attribute_marker: PhantomData<A>,
     #[default(10)]
     pub current: u32,
@@ -11,7 +11,7 @@ pub struct CharacterAttribute<A> {
     pub max: u32,
 }
 
-impl<A> CharacterAttribute<A> {
+impl<A: Attribute> CharacterAttribute<A> {
     pub fn new(value: u32) -> Self {
         Self {
             attribute_marker: PhantomData,
@@ -20,6 +20,11 @@ impl<A> CharacterAttribute<A> {
         }
     }
 }
+
+pub trait Attribute {}
+impl Attribute for Health {}
+impl Attribute for Strength {}
+impl Attribute for Agility {}
 
 #[derive(Default, Debug)]
 pub struct Health;

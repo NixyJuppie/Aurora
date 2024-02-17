@@ -6,12 +6,12 @@ use attributes::{Agility, CharacterAttribute, Health, Strength};
 use equipment::{CharacterEquipment, Chest, Helmet, Weapon};
 
 pub mod attributes;
+mod damage;
 pub mod equipment;
 pub mod player;
 
 #[derive(Bundle, SmartDefault, Debug)]
 pub struct CharacterBundle {
-    #[default(CharacterName("Character".to_string()))]
     pub name: CharacterName,
     // attributes
     #[default(CharacterAttribute::new(100))]
@@ -37,5 +37,5 @@ pub struct CharacterBundle {
     pub controller: KinematicCharacterController,
 }
 
-#[derive(Component, Default, Debug)]
-pub struct CharacterName(String);
+#[derive(Component, SmartDefault, Debug)]
+pub struct CharacterName(#[default("Character")] pub String);
