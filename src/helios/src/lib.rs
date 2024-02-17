@@ -6,6 +6,7 @@ use bevy::app::PluginGroupBuilder;
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::{RapierDebugRenderPlugin, RapierPhysicsPlugin};
+
 use camera::CameraPlugin;
 use character::player::PlayerPlugin;
 use input::InputPlugin;

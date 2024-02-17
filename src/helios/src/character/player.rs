@@ -1,6 +1,10 @@
+use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength};
+use crate::character::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
+use crate::character::CharacterName;
 use crate::input::GameplayInput;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use smart_default::SmartDefault;
 
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
@@ -12,9 +16,20 @@ impl Plugin for PlayerPlugin {
 #[derive(Component, Default, Debug)]
 pub struct Player;
 
-#[derive(Bundle, Default, Debug)]
+#[derive(Bundle, SmartDefault, Debug)]
 pub struct PlayerBundle {
     pub player: Player,
+    #[default(CharacterName("Player".to_string()))]
+    pub name: CharacterName,
+    // attributes
+    #[default(CharacterAttribute::new(100))]
+    pub health: CharacterAttribute<Health>,
+    pub strength: CharacterAttribute<Strength>,
+    pub agility: CharacterAttribute<Agility>,
+    // equipment
+    pub helmet: CharacterEquipment<Helmet>,
+    pub chest: CharacterEquipment<Chest>,
+    pub weapon: CharacterEquipment<Weapon>,
     // core
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
