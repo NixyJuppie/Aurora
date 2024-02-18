@@ -4,11 +4,12 @@ use helios::bevy_rapier3d::prelude::*;
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::attributes::{CharacterAttribute, Health};
 use helios::character::bundles::{CharacterBundle, PlayerBundle};
+use helios::character::equipment::{CharacterEquipment, Weapon};
 use helios::character::inventory::CharacterLoot;
 use helios::item::armor::ArmorProtection;
 use helios::item::bundles::{ArmorBundle, WeaponBundle};
 use helios::item::weapon::{DamageType, WeaponDamage, WeaponRange};
-use helios::item::ItemName;
+use helios::item::{ItemEquipmentSlot, ItemName};
 use helios::{HeliosCollision, HeliosDebugPlugins, HeliosPlugins};
 
 const GAME_NAME: &str = "Aurora";
@@ -46,18 +47,40 @@ fn spawn(
         },
     ));
 
-    commands.spawn((
-        CharacterBundle {
-            health: CharacterAttribute::<Health>::new(20),
-            collider: Collider::capsule_y(0.5, 0.5),
-            mesh: meshes.add(shape::Capsule::default().into()),
-            material: materials.add(Color::RED.into()),
-            transform: Transform::from_xyz(-2.0, 2.0, -5.0),
-            loot: CharacterLoot::Inventory,
-            ..default()
-        },
-        LockedAxes::ROTATION_LOCKED,
-    ));
+    let enemy_sword = commands
+        .spawn((
+            WeaponBundle {
+                name: ItemName("Enemy Sword".to_string()),
+                damage: WeaponDamage {
+                    damage: 10,
+                    damage_type: DamageType::Physical,
+                },
+                range: WeaponRange(3.0),
+                collider: Collider::cuboid(0.2, 0.1, 0.5),
+                mesh: meshes.add(shape::Box::new(0.4, 0.2, 1.0).into()),
+                material: materials.add(Color::RED.into()),
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+            RigidBodyDisabled,
+        ))
+        .id();
+    commands
+        .spawn((
+            CharacterBundle {
+                health: CharacterAttribute::<Health>::new(20),
+                collider: Collider::capsule_y(0.5, 0.5),
+                mesh: meshes.add(shape::Capsule::default().into()),
+                material: materials.add(Color::RED.into()),
+                transform: Transform::from_xyz(-2.0, 2.0, -5.0)
+                    .with_rotation(Quat::from_rotation_y(f32::to_radians(-135.0))),
+                loot: CharacterLoot::Inventory,
+                weapon: CharacterEquipment::<Weapon>::new(Some(enemy_sword)),
+                ..default()
+            },
+            LockedAxes::ROTATION_LOCKED,
+        ))
+        .add_child(enemy_sword);
 
     commands.spawn(WeaponBundle {
         name: ItemName("Sword".to_string()),
@@ -80,6 +103,17 @@ fn spawn(
         mesh: meshes.add(shape::Box::new(1.0, 0.2, 1.0).into()),
         material: materials.add(Color::BLUE.into()),
         transform: Transform::from_xyz(7.0, 5.0, -2.0),
+        ..default()
+    });
+
+    commands.spawn(ArmorBundle {
+        slot: ItemEquipmentSlot::Helmet,
+        name: ItemName("Crown".to_string()),
+        protection: ArmorProtection { physical: 4 },
+        collider: Collider::cuboid(0.3, 0.1, 0.3),
+        mesh: meshes.add(shape::Box::new(0.6, 0.2, 0.6).into()),
+        material: materials.add(Color::GOLD.into()),
+        transform: Transform::from_xyz(6.0, 5.0, -1.0),
         ..default()
     });
 
