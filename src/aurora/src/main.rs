@@ -2,10 +2,13 @@ use helios::bevy::prelude::*;
 use helios::bevy_rapier3d::geometry::Collider;
 use helios::bevy_rapier3d::prelude::{LockedAxes, RigidBody};
 use helios::camera::{GameCamera, GameCameraTarget};
+use helios::character::attributes::{CharacterAttribute, Health};
+use helios::character::equipment::{CharacterEquipment, Weapon};
 use helios::character::player::PlayerBundle;
 use helios::character::CharacterBundle;
-use helios::item::{ItemBundle, ItemName};
-use helios::{HeliosDebugPlugins, HeliosPlugins};
+use helios::item::damage::{DamageType, WeaponDamage};
+use helios::item::{ItemBundle, ItemName, WeaponBundle, WeaponRange};
+use helios::{HeliosCollision, HeliosDebugPlugins, HeliosPlugins};
 
 const GAME_NAME: &str = "Aurora";
 
@@ -39,20 +42,33 @@ fn spawn(
     });
     commands.spawn((Camera3dBundle::default(), GameCamera));
 
-    commands.spawn((
-        PlayerBundle {
-            rigidbody: RigidBody::Dynamic,
-            collider: Collider::capsule_y(0.5, 0.5),
-            mesh: meshes.add(shape::Capsule::default().into()),
-            material: materials.add(Color::GOLD.into()),
-            transform: Transform::from_xyz(0.0, 2.0, 0.0),
-            ..default()
-        },
-        LockedAxes::ROTATION_LOCKED,
-        GameCameraTarget {
-            offset: Vec3::new(0.0, 4.0, 10.0),
-        },
-    ));
+    let weapon = commands
+        .spawn(WeaponBundle {
+            name: ItemName("Weapon".to_string()),
+            range: WeaponRange(5.0),
+            damage: WeaponDamage {
+                damage: 10,
+                damage_type: DamageType::Physical,
+            },
+        })
+        .id();
+    commands
+        .spawn((
+            PlayerBundle {
+                rigidbody: RigidBody::Dynamic,
+                collider: Collider::capsule_y(0.5, 0.5),
+                mesh: meshes.add(shape::Capsule::default().into()),
+                material: materials.add(Color::GOLD.into()),
+                transform: Transform::from_xyz(0.0, 2.0, 0.0),
+                weapon: CharacterEquipment::<Weapon>::new(Some(weapon)),
+                ..default()
+            },
+            LockedAxes::ROTATION_LOCKED,
+            GameCameraTarget {
+                offset: Vec3::new(0.0, 4.0, 10.0),
+            },
+        ))
+        .add_child(weapon);
 
     let item = commands
         .spawn(ItemBundle {
@@ -62,6 +78,7 @@ fn spawn(
     commands
         .spawn((
             CharacterBundle {
+                health: CharacterAttribute::<Health>::new(20),
                 rigidbody: RigidBody::Dynamic,
                 collider: Collider::capsule_y(0.5, 0.5),
                 mesh: meshes.add(shape::Capsule::default().into()),
@@ -89,6 +106,7 @@ fn spawn_world(
             ..default()
         },
         Collider::cuboid(10.0, 0.01, 10.0),
+        HeliosCollision::world_groups(),
     ));
     // step1
     commands.spawn((
@@ -99,6 +117,7 @@ fn spawn_world(
             ..default()
         },
         Collider::cuboid(1.0, 0.15, 1.0),
+        HeliosCollision::world_groups(),
     ));
     // step2
     commands.spawn((
@@ -109,6 +128,7 @@ fn spawn_world(
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
     ));
     // slope
     commands.spawn((
@@ -120,5 +140,6 @@ fn spawn_world(
             ..default()
         },
         Collider::cuboid(3.0, 0.25, 3.0),
+        HeliosCollision::world_groups(),
     ));
 }

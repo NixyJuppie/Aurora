@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component, Default, Debug)]
+#[derive(Component, Default, Clone, Debug)]
 pub struct WeaponDamage {
     pub damage: u32,
     pub damage_type: DamageType,

@@ -2148,6 +2148,7 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_rapier3d",
+ "bitflags 2.4.2",
  "smart-default",
 ]
 

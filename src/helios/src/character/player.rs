@@ -1,7 +1,10 @@
+use crate::character::attack::AttackCommand;
 use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength};
 use crate::character::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
-use crate::character::CharacterName;
+use crate::character::{AttackCooldown, CharacterName};
 use crate::input::GameplayInput;
+use crate::HeliosCollision;
+
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use smart_default::SmartDefault;
@@ -10,6 +13,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, move_player);
+        app.add_systems(Update, attack);
     }
 }
 
@@ -30,6 +34,7 @@ pub struct PlayerBundle {
     pub helmet: CharacterEquipment<Helmet>,
     pub chest: CharacterEquipment<Chest>,
     pub weapon: CharacterEquipment<Weapon>,
+    pub attack_cooldown: AttackCooldown,
     // core
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
@@ -43,6 +48,8 @@ pub struct PlayerBundle {
     pub rigidbody: RigidBody,
     pub collider: Collider,
     pub controller: KinematicCharacterController,
+    #[default(HeliosCollision::character_groups())]
+    pub collision_groups: CollisionGroups,
 }
 
 fn move_player(
@@ -50,12 +57,27 @@ fn move_player(
     input: Res<GameplayInput>,
     time: Res<Time>,
 ) {
-    const SPEED: f32 = 10.0;
-
-    if let Some(movement) = input.movement {
-        for mut player in players.iter_mut() {
-            let movement = Vec3::new(movement.x, 0.0, -movement.y) * SPEED * time.delta_seconds();
-            player.translation = Some(movement);
-        }
+    let Some(movement) = input.movement else {
+        return;
     };
+
+    const SPEED: f32 = 10.0;
+    for mut player in players.iter_mut() {
+        let movement = Vec3::new(movement.x, 0.0, -movement.y) * SPEED * time.delta_seconds();
+        player.translation = Some(movement);
+    }
+}
+
+fn attack(
+    mut commands: Commands,
+    players: Query<(&AttackCooldown, Entity), With<Player>>,
+    input: Res<GameplayInput>,
+) {
+    if !input.attack {
+        return;
+    }
+
+    for (_, player) in players.iter().filter(|(c, _)| c.0.finished()) {
+        commands.add(AttackCommand { attacker: player })
+    }
 }

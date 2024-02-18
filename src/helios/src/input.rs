@@ -13,12 +13,14 @@ impl Plugin for InputPlugin {
 pub struct GameplayInput {
     pub movement: Option<Vec2>,
     pub look: Option<Vec2>,
+    pub attack: bool,
 }
 
 fn update_gameplay_input(
     mut input: ResMut<GameplayInput>,
     gamepads: Res<Gamepads>,
     gamepad_axes: Res<Axis<GamepadAxis>>,
+    gamepad_buttons: Res<Input<GamepadButton>>,
     keyboard: Res<Input<KeyCode>>,
     mouse_motion: EventReader<MouseMotion>,
 ) {
@@ -41,6 +43,12 @@ fn update_gameplay_input(
         ),
         read_mouse_motion(mouse_motion).map(|v| Vec2::new(v.x, -v.y)),
     );
+
+    input.attack = gamepads
+        .iter()
+        .map(|g| gamepad_buttons.pressed(GamepadButton::new(g, GamepadButtonType::RightTrigger)))
+        .any(|v| v)
+        || keyboard.pressed(KeyCode::E);
 }
 
 fn merge_inputs(first: Option<Vec2>, second: Option<Vec2>) -> Option<Vec2> {

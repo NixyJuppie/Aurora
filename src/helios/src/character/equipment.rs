@@ -7,7 +7,16 @@ pub struct CharacterEquipment<S: EquipmentSlot> {
     pub entity: Option<Entity>,
 }
 
-pub trait EquipmentSlot {}
+impl<S: EquipmentSlot> CharacterEquipment<S> {
+    pub fn new(entity: Option<Entity>) -> Self {
+        Self {
+            entity,
+            slot_marker: PhantomData,
+        }
+    }
+}
+
+pub trait EquipmentSlot: Send + Sync {}
 impl EquipmentSlot for Chest {}
 impl EquipmentSlot for Helmet {}
 impl EquipmentSlot for Weapon {}
