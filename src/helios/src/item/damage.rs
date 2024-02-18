@@ -12,7 +12,6 @@ pub struct ArmorProtection {
 }
 
 impl ArmorProtection {
-    #[allow(unused)] // todo: remove when used
     pub fn get(&self, damage_type: DamageType) -> u32 {
         match damage_type {
             DamageType::Physical => self.physical,

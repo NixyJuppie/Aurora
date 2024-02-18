@@ -45,7 +45,7 @@ fn spawn(
     let weapon = commands
         .spawn(WeaponBundle {
             name: ItemName("Weapon".to_string()),
-            range: WeaponRange(5.0),
+            range: WeaponRange(2.5),
             damage: WeaponDamage {
                 damage: 10,
                 damage_type: DamageType::Physical,

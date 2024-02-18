@@ -13,6 +13,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, move_player);
+        app.add_systems(Update, rotate_player);
         app.add_systems(Update, attack);
     }
 }
@@ -61,10 +62,27 @@ fn move_player(
         return;
     };
 
-    const SPEED: f32 = 10.0;
+    const METERS_PER_SECOND: f32 = 10.0;
     for mut player in players.iter_mut() {
-        let movement = Vec3::new(movement.x, 0.0, -movement.y) * SPEED * time.delta_seconds();
+        let movement =
+            Vec3::new(movement.x, 0.0, -movement.y) * METERS_PER_SECOND * time.delta_seconds();
         player.translation = Some(movement);
+    }
+}
+
+fn rotate_player(
+    mut players: Query<&mut Transform, With<Player>>,
+    input: Res<GameplayInput>,
+    time: Res<Time>,
+) {
+    let Some(rotation) = input.rotate else {
+        return;
+    };
+
+    const DEGREES_PER_SECOND: f32 = 180.0;
+    for mut player in players.iter_mut() {
+        let rotation = -rotation * DEGREES_PER_SECOND * time.delta_seconds();
+        player.rotate_y(rotation.to_radians());
     }
 }
 

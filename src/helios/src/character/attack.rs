@@ -32,19 +32,18 @@ impl Command for AttackCommand {
         }
         cooldown.0.reset();
 
-        let range = world.get::<WeaponRange>(weapon).unwrap();
+        let radius = world.get::<WeaponRange>(weapon).unwrap().0 / 2.0;
         let damage = world.get::<WeaponDamage>(weapon).unwrap();
-        let mut cone_transform = *world.get::<Transform>(self.attacker).unwrap();
-        cone_transform.rotate_x(f32::to_radians(-90.0));
+        let transform = *world.get::<Transform>(self.attacker).unwrap();
 
         let mut commands = vec![];
         world
             .get_resource::<RapierContext>()
             .unwrap()
             .intersections_with_shape(
-                cone_transform.translation,
-                cone_transform.rotation,
-                &Collider::cone(range.0 / 2.0, range.0),
+                transform.translation + (transform.forward() * radius),
+                transform.rotation,
+                &Collider::ball(radius),
                 QueryFilter::new().groups(CollisionGroups::new(
                     HeliosCollision::CHARACTER.into(),
                     HeliosCollision::CHARACTER.into(),

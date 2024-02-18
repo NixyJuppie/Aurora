@@ -7,6 +7,9 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::{
     CollisionGroups, Group, RapierDebugRenderPlugin, RapierPhysicsPlugin,
 };
+use bevy_screen_diagnostics::{
+    ScreenDiagnosticsPlugin, ScreenEntityDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin,
+};
 use bitflags::bitflags;
 
 use camera::CameraPlugin;
@@ -37,8 +40,22 @@ impl PluginGroup for HeliosPlugins {
 pub struct HeliosDebugPlugins;
 impl PluginGroup for HeliosDebugPlugins {
     fn build(self) -> PluginGroupBuilder {
+        let screen_diagnostics = ScreenDiagnosticsPlugin {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                top: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..default()
+            },
+            ..default()
+        };
+
         PluginGroupBuilder::start::<Self>()
             .add(RapierDebugRenderPlugin::default())
+            .add(screen_diagnostics)
+            .add(ScreenFrameDiagnosticsPlugin)
+            .add(ScreenEntityDiagnosticsPlugin)
             .add(DebugUiPlugin)
     }
 }

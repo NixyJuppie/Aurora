@@ -7,7 +7,7 @@ use crate::camera::GameCamera;
 use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength};
 use crate::character::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
 use crate::character::CharacterName;
-use crate::item::ItemName;
+use crate::item::{ItemName, WeaponRange};
 
 pub struct DebugUiPlugin;
 impl Plugin for DebugUiPlugin {
@@ -17,6 +17,7 @@ impl Plugin for DebugUiPlugin {
         }
 
         app.add_systems(Update, draw_focused_entity_info);
+        app.add_systems(Update, draw_character_weapon_range_gizmos);
     }
 }
 
@@ -54,6 +55,24 @@ fn draw_focused_entity_info(
                 .show(egui_contexts.ctx_mut(), |ui| {
                     draw_character_info(ui, character, &items)
                 });
+        }
+    }
+}
+
+fn draw_character_weapon_range_gizmos(
+    characters: Query<(&Transform, &CharacterEquipment<Weapon>), With<CharacterName>>,
+    weapons: Query<&WeaponRange, With<Parent>>,
+    mut gizmos: Gizmos,
+) {
+    for (character, weapon) in characters.iter() {
+        if let Some(range) = weapon.entity.and_then(|w| weapons.get(w).ok()) {
+            let radius = range.0 / 2.0;
+            gizmos.sphere(
+                character.translation + (character.forward() * radius),
+                character.rotation,
+                radius,
+                Color::RED,
+            );
         }
     }
 }
