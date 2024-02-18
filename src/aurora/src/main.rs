@@ -1,13 +1,14 @@
 use helios::bevy::prelude::*;
-use helios::bevy_rapier3d::geometry::Collider;
-use helios::bevy_rapier3d::prelude::{LockedAxes, RigidBody};
+use helios::bevy_rapier3d::prelude::*;
+
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::attributes::{CharacterAttribute, Health};
-use helios::character::equipment::{CharacterEquipment, Weapon};
-use helios::character::player::PlayerBundle;
-use helios::character::CharacterBundle;
-use helios::item::damage::{DamageType, WeaponDamage};
-use helios::item::{ItemBundle, ItemName, WeaponBundle, WeaponRange};
+use helios::character::bundles::{CharacterBundle, PlayerBundle};
+use helios::character::inventory::CharacterLoot;
+use helios::item::armor::ArmorProtection;
+use helios::item::bundles::{ArmorBundle, WeaponBundle};
+use helios::item::weapon::{DamageType, WeaponDamage, WeaponRange};
+use helios::item::ItemName;
 use helios::{HeliosCollision, HeliosDebugPlugins, HeliosPlugins};
 
 const GAME_NAME: &str = "Aurora";
@@ -31,64 +32,56 @@ fn spawn(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            illuminance: 30000.0,
-            shadows_enabled: true,
+    commands.spawn((
+        PlayerBundle {
+            collider: Collider::capsule_y(0.5, 0.5),
+            mesh: meshes.add(shape::Capsule::default().into()),
+            material: materials.add(Color::GOLD.into()),
+            transform: Transform::from_xyz(0.0, 2.0, 0.0),
             ..default()
         },
-        transform: Transform::default().looking_at(Vec3::new(-1.0, -1.0, -0.33), Vec3::Y),
+        LockedAxes::ROTATION_LOCKED,
+        GameCameraTarget {
+            offset: Vec3::new(0.0, 4.0, 10.0),
+        },
+    ));
+
+    commands.spawn((
+        CharacterBundle {
+            health: CharacterAttribute::<Health>::new(20),
+            collider: Collider::capsule_y(0.5, 0.5),
+            mesh: meshes.add(shape::Capsule::default().into()),
+            material: materials.add(Color::RED.into()),
+            transform: Transform::from_xyz(-2.0, 2.0, -5.0),
+            loot: CharacterLoot::Inventory,
+            ..default()
+        },
+        LockedAxes::ROTATION_LOCKED,
+    ));
+
+    commands.spawn(WeaponBundle {
+        name: ItemName("Sword".to_string()),
+        damage: WeaponDamage {
+            damage: 10,
+            damage_type: DamageType::Physical,
+        },
+        range: WeaponRange(2.0),
+        collider: Collider::cuboid(0.2, 0.1, 0.5),
+        mesh: meshes.add(shape::Box::new(0.4, 0.2, 1.0).into()),
+        material: materials.add(Color::DARK_GRAY.into()),
+        transform: Transform::from_xyz(5.0, 5.0, -2.0),
         ..default()
     });
-    commands.spawn((Camera3dBundle::default(), GameCamera));
 
-    let weapon = commands
-        .spawn(WeaponBundle {
-            name: ItemName("Weapon".to_string()),
-            range: WeaponRange(2.5),
-            damage: WeaponDamage {
-                damage: 10,
-                damage_type: DamageType::Physical,
-            },
-        })
-        .id();
-    commands
-        .spawn((
-            PlayerBundle {
-                rigidbody: RigidBody::Dynamic,
-                collider: Collider::capsule_y(0.5, 0.5),
-                mesh: meshes.add(shape::Capsule::default().into()),
-                material: materials.add(Color::GOLD.into()),
-                transform: Transform::from_xyz(0.0, 2.0, 0.0),
-                weapon: CharacterEquipment::<Weapon>::new(Some(weapon)),
-                ..default()
-            },
-            LockedAxes::ROTATION_LOCKED,
-            GameCameraTarget {
-                offset: Vec3::new(0.0, 4.0, 10.0),
-            },
-        ))
-        .add_child(weapon);
-
-    let item = commands
-        .spawn(ItemBundle {
-            name: ItemName("Test".to_string()),
-        })
-        .id();
-    commands
-        .spawn((
-            CharacterBundle {
-                health: CharacterAttribute::<Health>::new(20),
-                rigidbody: RigidBody::Dynamic,
-                collider: Collider::capsule_y(0.5, 0.5),
-                mesh: meshes.add(shape::Capsule::default().into()),
-                material: materials.add(Color::RED.into()),
-                transform: Transform::from_xyz(-2.0, 2.0, -5.0),
-                ..default()
-            },
-            LockedAxes::ROTATION_LOCKED,
-        ))
-        .add_child(item);
+    commands.spawn(ArmorBundle {
+        name: ItemName("Chainmail".to_string()),
+        protection: ArmorProtection { physical: 5 },
+        collider: Collider::cuboid(0.5, 0.1, 0.5),
+        mesh: meshes.add(shape::Box::new(1.0, 0.2, 1.0).into()),
+        material: materials.add(Color::BLUE.into()),
+        transform: Transform::from_xyz(7.0, 5.0, -2.0),
+        ..default()
+    });
 
     spawn_world(commands, materials, meshes);
 }
@@ -98,6 +91,20 @@ fn spawn_world(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
+    // light
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 30000.0,
+            shadows_enabled: true,
+            ..default()
+        },
+        transform: Transform::default().looking_at(Vec3::new(-1.0, -1.0, -0.33), Vec3::Y),
+        ..default()
+    });
+
+    // camera
+    commands.spawn((Camera3dBundle::default(), GameCamera));
+
     // ground
     commands.spawn((
         PbrBundle {
@@ -108,6 +115,7 @@ fn spawn_world(
         Collider::cuboid(10.0, 0.01, 10.0),
         HeliosCollision::world_groups(),
     ));
+
     // step1
     commands.spawn((
         PbrBundle {
@@ -119,6 +127,7 @@ fn spawn_world(
         Collider::cuboid(1.0, 0.15, 1.0),
         HeliosCollision::world_groups(),
     ));
+
     // step2
     commands.spawn((
         PbrBundle {
@@ -130,6 +139,7 @@ fn spawn_world(
         Collider::cuboid(1.0, 0.3, 1.0),
         HeliosCollision::world_groups(),
     ));
+
     // slope
     commands.spawn((
         PbrBundle {

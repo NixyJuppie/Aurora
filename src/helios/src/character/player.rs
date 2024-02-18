@@ -1,57 +1,23 @@
-use crate::character::attack::AttackCommand;
-use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength};
-use crate::character::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
-use crate::character::{AttackCooldown, CharacterName};
-use crate::input::GameplayInput;
-use crate::HeliosCollision;
-
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use smart_default::SmartDefault;
+
+use crate::character::attack::AttackCommand;
+use crate::character::inventory::PickupItems;
+use crate::character::AttackCooldown;
+use crate::input::GameplayInput;
 
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, move_player);
         app.add_systems(Update, rotate_player);
+        app.add_systems(Update, pickup_items);
         app.add_systems(Update, attack);
     }
 }
 
 #[derive(Component, Default, Debug)]
 pub struct Player;
-
-#[derive(Bundle, SmartDefault, Debug)]
-pub struct PlayerBundle {
-    pub player: Player,
-    #[default(CharacterName("Player".to_string()))]
-    pub name: CharacterName,
-    // attributes
-    #[default(CharacterAttribute::new(100))]
-    pub health: CharacterAttribute<Health>,
-    pub strength: CharacterAttribute<Strength>,
-    pub agility: CharacterAttribute<Agility>,
-    // equipment
-    pub helmet: CharacterEquipment<Helmet>,
-    pub chest: CharacterEquipment<Chest>,
-    pub weapon: CharacterEquipment<Weapon>,
-    pub attack_cooldown: AttackCooldown,
-    // core
-    pub global_transform: GlobalTransform,
-    pub visibility: Visibility,
-    pub inherited_visibility: InheritedVisibility,
-    pub view_visibility: ViewVisibility,
-    // mesh
-    pub mesh: Handle<Mesh>,
-    pub material: Handle<StandardMaterial>,
-    pub transform: Transform,
-    // physics
-    pub rigidbody: RigidBody,
-    pub collider: Collider,
-    pub controller: KinematicCharacterController,
-    #[default(HeliosCollision::character_groups())]
-    pub collision_groups: CollisionGroups,
-}
 
 fn move_player(
     mut players: Query<&mut KinematicCharacterController, With<Player>>,
@@ -97,5 +63,19 @@ fn attack(
 
     for (_, player) in players.iter().filter(|(c, _)| c.0.finished()) {
         commands.add(AttackCommand { attacker: player })
+    }
+}
+
+fn pickup_items(
+    mut commands: Commands,
+    players: Query<Entity, With<Player>>,
+    input: Res<GameplayInput>,
+) {
+    if !input.pickup {
+        return;
+    }
+
+    for player in players.iter() {
+        commands.add(PickupItems { character: player })
     }
 }

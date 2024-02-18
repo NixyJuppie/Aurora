@@ -64,9 +64,11 @@ bitflags! {
     pub struct HeliosCollision: u32 {
         const WORLD = 1 << 0;
         const CHARACTER = 1 << 1;
+        const ITEM = 1 << 2;
 
-        const WORLD_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits();
+        const WORLD_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits() | Self::ITEM.bits();
         const CHARACTER_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits();
+        const ITEM_FILTER = Self::WORLD.bits() | Self::ITEM.bits();
     }
 }
 
@@ -77,11 +79,28 @@ impl From<HeliosCollision> for Group {
 }
 
 impl HeliosCollision {
+    pub fn none_groups() -> CollisionGroups {
+        CollisionGroups::new(Group::NONE, Group::NONE)
+    }
+
     pub fn world_groups() -> CollisionGroups {
         CollisionGroups::new(Self::WORLD.into(), Self::WORLD_FILTER.into())
+    }
+    pub fn world_only_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::WORLD.into(), Self::WORLD.into())
     }
 
     pub fn character_groups() -> CollisionGroups {
         CollisionGroups::new(Self::CHARACTER.into(), Self::CHARACTER_FILTER.into())
+    }
+    pub fn character_only_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::CHARACTER.into(), Self::CHARACTER.into())
+    }
+
+    pub fn item_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::ITEM.into(), Self::ITEM_FILTER.into())
+    }
+    pub fn item_only_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::ITEM.into(), Self::ITEM.into())
     }
 }
