@@ -39,8 +39,8 @@ fn spawn(
         CharacterBundle {
             name: CharacterName("Player".to_string()),
             collider: Collider::capsule_y(0.5, 0.5),
-            mesh: meshes.add(shape::Capsule::default().into()),
-            material: materials.add(Color::GOLD.into()),
+            mesh: meshes.add(Capsule3d::new(0.5, 1.0)),
+            material: materials.add(Color::GOLD),
             transform: Transform::from_xyz(0.0, 2.0, 0.0),
             ..default()
         },
@@ -59,8 +59,8 @@ fn spawn(
                 },
                 range: WeaponRange(3.0),
                 collider: Collider::cuboid(0.2, 0.1, 0.5),
-                mesh: meshes.add(shape::Box::new(0.4, 0.2, 1.0).into()),
-                material: materials.add(Color::RED.into()),
+                mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
+                material: materials.add(Color::RED),
                 visibility: Visibility::Hidden,
                 ..default()
             },
@@ -73,8 +73,8 @@ fn spawn(
                 name: CharacterName("Enemy".to_string()),
                 health: CharacterAttribute::<Health>::new(20),
                 collider: Collider::capsule_y(0.5, 0.5),
-                mesh: meshes.add(shape::Capsule::default().into()),
-                material: materials.add(Color::RED.into()),
+                mesh: meshes.add(Capsule3d::new(0.5, 1.0)),
+                material: materials.add(Color::RED),
                 transform: Transform::from_xyz(-2.0, 2.0, -5.0)
                     .with_rotation(Quat::from_rotation_y(f32::to_radians(-135.0))),
                 loot: CharacterLoot::Inventory,
@@ -93,8 +93,8 @@ fn spawn(
         },
         range: WeaponRange(2.0),
         collider: Collider::cuboid(0.2, 0.1, 0.5),
-        mesh: meshes.add(shape::Box::new(0.4, 0.2, 1.0).into()),
-        material: materials.add(Color::DARK_GRAY.into()),
+        mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
+        material: materials.add(Color::DARK_GRAY),
         transform: Transform::from_xyz(5.0, 5.0, -2.0),
         ..default()
     });
@@ -103,8 +103,8 @@ fn spawn(
         name: ItemName("Chainmail".to_string()),
         protection: ArmorProtection { physical: 5 },
         collider: Collider::cuboid(0.5, 0.1, 0.5),
-        mesh: meshes.add(shape::Box::new(1.0, 0.2, 1.0).into()),
-        material: materials.add(Color::BLUE.into()),
+        mesh: meshes.add(Cuboid::new(1.0, 0.2, 1.0)),
+        material: materials.add(Color::BLUE),
         transform: Transform::from_xyz(7.0, 5.0, -2.0),
         ..default()
     });
@@ -114,8 +114,8 @@ fn spawn(
         name: ItemName("Crown".to_string()),
         protection: ArmorProtection { physical: 4 },
         collider: Collider::cuboid(0.3, 0.1, 0.3),
-        mesh: meshes.add(shape::Box::new(0.6, 0.2, 0.6).into()),
-        material: materials.add(Color::GOLD.into()),
+        mesh: meshes.add(Cuboid::new(0.6, 0.2, 0.6)),
+        material: materials.add(Color::GOLD),
         transform: Transform::from_xyz(6.0, 5.0, -1.0),
         ..default()
     });
@@ -131,7 +131,7 @@ fn spawn_world(
     // light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 30000.0,
+            illuminance: light_consts::lux::AMBIENT_DAYLIGHT,
             shadows_enabled: true,
             ..default()
         },
@@ -145,8 +145,8 @@ fn spawn_world(
     // ground
     commands.spawn((
         PbrBundle {
-            mesh: meshes.add(shape::Plane::from_size(50.0).into()),
-            material: materials.add(Color::BEIGE.into()),
+            mesh: meshes.add(Cuboid::new(50.0, 0.02, 50.0)),
+            material: materials.add(Color::GRAY),
             ..default()
         },
         Collider::cuboid(25.0, 0.01, 25.0),
@@ -158,8 +158,8 @@ fn spawn_world(
         PbrBundle {
             transform: Transform::from_xyz(7.0, 0.75, 0.0)
                 .with_rotation(Quat::from_rotation_x(f32::to_radians(20.0))),
-            mesh: meshes.add(shape::Box::new(6.0, 0.5, 6.0).into()),
-            material: materials.add(Color::GREEN.into()),
+            mesh: meshes.add(Cuboid::new(6.0, 0.5, 6.0)),
+            material: materials.add(Color::GREEN),
             ..default()
         },
         Collider::cuboid(3.0, 0.25, 3.0),
@@ -170,8 +170,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-5.0, 0.2, 0.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.3, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.3, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.15, 1.0),
@@ -182,8 +182,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-7.0, 0.55, 0.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
@@ -194,8 +194,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-7.0, 0.9, -2.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
@@ -206,8 +206,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-7.0, 1.25, -4.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
@@ -218,8 +218,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-9.0, 1.6, -4.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
@@ -230,8 +230,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-9.0, 1.95, -2.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),
@@ -242,8 +242,8 @@ fn spawn_world(
     commands.spawn((
         PbrBundle {
             transform: Transform::from_xyz(-9.0, 2.3, 0.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
+            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
+            material: materials.add(Color::BLACK),
             ..default()
         },
         Collider::cuboid(1.0, 0.3, 1.0),

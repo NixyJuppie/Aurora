@@ -70,7 +70,7 @@ fn focus_entity(
     window: Query<&Window, With<PrimaryWindow>>,
     camera: Query<(&Camera, &GlobalTransform), With<GameCamera>>,
     rapier: Res<RapierContext>,
-    input: Res<Input<MouseButton>>,
+    input: Res<ButtonInput<MouseButton>>,
     mut egui_contexts: EguiContexts,
     mut focus: ResMut<FocusedEntity>,
 ) {
@@ -90,7 +90,13 @@ fn focus_entity(
             .cursor_position()
             .and_then(|position| camera.viewport_to_world(camera_transform, position))
             .and_then(|ray| {
-                rapier.cast_ray(ray.origin, ray.direction, 25.0, true, QueryFilter::new())
+                rapier.cast_ray(
+                    ray.origin,
+                    ray.direction.into(),
+                    25.0,
+                    true,
+                    QueryFilter::new(),
+                )
             })
         {
             focus.0 = Some(target);

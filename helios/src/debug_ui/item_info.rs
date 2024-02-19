@@ -1,9 +1,9 @@
-use crate::character::equipment::EquipItemCommand;
-use crate::character::CharacterName;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
+use crate::character::equipment::EquipItemCommand;
 use crate::character::inventory::{DropItemCommand, PickupItemCommand};
+use crate::character::CharacterName;
 use crate::debug_ui::{draw_grid, draw_row, FocusedEntity};
 use crate::item::armor::ArmorProtection;
 use crate::item::weapon::{WeaponDamage, WeaponRange};

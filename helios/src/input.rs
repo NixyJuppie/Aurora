@@ -21,8 +21,8 @@ fn update_gameplay_input(
     mut input: ResMut<GameplayInput>,
     gamepads: Res<Gamepads>,
     gamepad_axes: Res<Axis<GamepadAxis>>,
-    gamepad_buttons: Res<Input<GamepadButton>>,
-    keyboard: Res<Input<KeyCode>>,
+    gamepad_buttons: Res<ButtonInput<GamepadButton>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
 ) {
     input.movement = merge_inputs(
         read_gamepad_axes(
@@ -31,12 +31,18 @@ fn update_gameplay_input(
             GamepadAxisType::LeftStickX,
             GamepadAxisType::LeftStickY,
         ),
-        read_keyboard_axes(&keyboard, KeyCode::A, KeyCode::D, KeyCode::S, KeyCode::W),
+        read_keyboard_axes(
+            &keyboard,
+            KeyCode::KeyA,
+            KeyCode::KeyD,
+            KeyCode::KeyS,
+            KeyCode::KeyW,
+        ),
     );
 
     input.rotate = merge_inputs(
         read_gamepad_axis(&gamepads, &gamepad_axes, GamepadAxisType::RightStickX),
-        read_keyboard_axis(&keyboard, KeyCode::Q, KeyCode::E),
+        read_keyboard_axis(&keyboard, KeyCode::KeyQ, KeyCode::KeyE),
     );
 
     input.attack = gamepads
@@ -49,7 +55,7 @@ fn update_gameplay_input(
         .iter()
         .map(|g| gamepad_buttons.pressed(GamepadButton::new(g, GamepadButtonType::South)))
         .any(|v| v)
-        || keyboard.pressed(KeyCode::F);
+        || keyboard.pressed(KeyCode::KeyF);
 
     input.jump = gamepads
         .iter()
@@ -101,7 +107,7 @@ fn read_gamepad_axes(
 }
 
 fn read_keyboard_axis(
-    keyboard: &Res<Input<KeyCode>>,
+    keyboard: &Res<ButtonInput<KeyCode>>,
     negative: KeyCode,
     positive: KeyCode,
 ) -> Option<f32> {
@@ -117,7 +123,7 @@ fn read_keyboard_axis(
 }
 
 fn read_keyboard_axes(
-    keyboard: &Res<Input<KeyCode>>,
+    keyboard: &Res<ButtonInput<KeyCode>>,
     negative_x: KeyCode,
     positive_x: KeyCode,
     negative_y: KeyCode,
