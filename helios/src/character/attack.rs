@@ -4,6 +4,7 @@ use bevy_rapier3d::prelude::*;
 
 use crate::character::attributes::{CharacterAttribute, Health};
 use crate::character::equipment::{CharacterEquipment, Chest, EquipmentSlot, Helmet, Weapon};
+use crate::character::experience::{CharacterExperience, CharacterLevel};
 use crate::character::inventory::{CharacterLoot, DropItemCommand};
 use crate::character::AttackCooldown;
 use crate::item::armor::ArmorProtection;
@@ -56,6 +57,7 @@ impl Command for AttackCommand {
         for target in targets {
             DealDamageCommand {
                 target,
+                attacker: self.0,
                 damage: damage.damage,
                 damage_type: damage.damage_type,
             }
@@ -68,6 +70,7 @@ impl Command for AttackCommand {
 pub struct DealDamageCommand {
     pub damage: u32,
     pub damage_type: DamageType,
+    pub attacker: Entity,
     pub target: Entity,
 }
 
@@ -88,7 +91,11 @@ impl Command for DealDamageCommand {
             );
 
             if health.current == 0 {
-                KillCommand(self.target).apply(world);
+                KillCommand {
+                    killer: self.attacker,
+                    target: self.target,
+                }
+                .apply(world);
             }
         }
     }
@@ -108,28 +115,33 @@ fn get_protection<S: EquipmentSlot>(world: &World, target: Entity, damage_type: 
 }
 
 #[derive(Debug)]
-pub struct KillCommand(pub Entity);
+pub struct KillCommand {
+    pub killer: Entity,
+    pub target: Entity,
+}
 impl Command for KillCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
 
-        let items = match world.get::<CharacterLoot>(self.0).unwrap() {
+        let items = match world.get::<CharacterLoot>(self.target).unwrap() {
             CharacterLoot::None => vec![],
             CharacterLoot::Inventory => world
-                .get::<Children>(self.0)
+                .get::<Children>(self.target)
                 .map(|c| c.iter().cloned().collect())
                 .unwrap_or_default(),
             CharacterLoot::Fixed(items) => items.clone(),
         };
-
         for item in items {
             DropItemCommand {
                 item,
-                character: self.0,
+                character: self.target,
             }
             .apply(world);
         }
 
-        world.entity_mut(self.0).despawn_recursive();
+        let level = world.get::<CharacterLevel>(self.target).unwrap();
+        world.get_mut::<CharacterExperience>(self.killer).unwrap().0 += level.0 as u32 * 10;
+
+        world.entity_mut(self.target).despawn_recursive();
     }
 }

@@ -5,6 +5,7 @@ use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::attributes::{CharacterAttribute, Health};
 use helios::character::bundles::CharacterBundle;
 use helios::character::equipment::{CharacterEquipment, Weapon};
+use helios::character::experience::CharacterLevel;
 use helios::character::inventory::CharacterLoot;
 use helios::character::CharacterName;
 use helios::item::armor::ArmorProtection;
@@ -71,6 +72,7 @@ fn spawn(
         .spawn((
             CharacterBundle {
                 name: CharacterName("Enemy".to_string()),
+                level: CharacterLevel(30),
                 health: CharacterAttribute::<Health>::new(20),
                 collider: Collider::capsule_y(0.5, 0.5),
                 mesh: meshes.add(Capsule3d::new(0.5, 1.0)),

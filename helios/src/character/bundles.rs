@@ -2,15 +2,18 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use smart_default::SmartDefault;
 
-use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength};
-use crate::character::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
-use crate::character::inventory::CharacterLoot;
-use crate::character::{AttackCooldown, CharacterName};
+use super::attributes::{Agility, CharacterAttribute, Health, Strength};
+use super::equipment::{CharacterEquipment, Chest, Helmet, Weapon};
+use super::experience::{CharacterExperience, CharacterLevel};
+use super::inventory::CharacterLoot;
+use super::{AttackCooldown, CharacterName};
 use crate::HeliosCollision;
 
 #[derive(Bundle, SmartDefault, Debug)]
 pub struct CharacterBundle {
     pub name: CharacterName,
+    pub level: CharacterLevel,
+    pub experience: CharacterExperience,
     pub loot: CharacterLoot,
     pub attack_cooldown: AttackCooldown,
     // attributes

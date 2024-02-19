@@ -106,7 +106,11 @@ fn focus_entity(
 
 pub fn draw_grid(header: &str, ui: &mut egui::Ui, content: impl FnOnce(&mut egui::Ui)) {
     ui.heading(RichText::new(header).strong());
-    egui::Grid::new(header).striped(true).show(ui, content);
+    egui::Grid::new(header)
+        .min_col_width(150.0)
+        .max_col_width(150.0)
+        .striped(true)
+        .show(ui, content);
 }
 
 pub fn draw_row(ui: &mut egui::Ui, label: &str, draw_content: impl FnOnce(&mut egui::Ui)) {
@@ -115,12 +119,10 @@ pub fn draw_row(ui: &mut egui::Ui, label: &str, draw_content: impl FnOnce(&mut e
     ui.end_row();
 }
 
-pub fn draw_progress(ui: &mut egui::Ui, label: &str, current: f32, max: f32, color: egui::Color32) {
-    ui.label(RichText::new(label).strong());
+pub fn draw_progress(ui: &mut egui::Ui, current: f32, max: f32, color: egui::Color32) {
     ui.add(
         egui::ProgressBar::new(current / max)
             .text(format!("{} / {}", current, max))
             .fill(color),
     );
-    ui.end_row();
 }

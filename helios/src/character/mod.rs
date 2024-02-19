@@ -1,19 +1,23 @@
-use crate::character::attack::AttackCommand;
-use crate::character::equipment::{CharacterEquipment, Weapon};
-use crate::player::Player;
 use bevy::prelude::*;
 use smart_default::SmartDefault;
+
+use crate::player::Player;
+use attack::AttackCommand;
+use equipment::{CharacterEquipment, Weapon};
+use experience::level_up;
 
 pub mod attack;
 pub mod attributes;
 pub mod bundles;
 pub mod equipment;
+pub mod experience;
 pub mod inventory;
 
 pub struct CharacterPlugin;
 impl Plugin for CharacterPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, update_attack_cooldown);
+        app.add_systems(Update, level_up);
         app.add_systems(Update, temp_attack);
     }
 }

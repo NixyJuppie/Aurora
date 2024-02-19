@@ -6,6 +6,7 @@ use crate::character::attributes::{Agility, CharacterAttribute, Health, Strength
 use crate::character::equipment::{
     CharacterEquipment, Chest, EquipItemCommand, EquipmentSlot, Helmet, UnequipItemCommand, Weapon,
 };
+use crate::character::experience::{CharacterExperience, CharacterLevel};
 use crate::character::inventory::DropItemCommand;
 use crate::character::CharacterName;
 use crate::debug_ui::{draw_grid, draw_progress, draw_row, FocusedEntity};
@@ -16,6 +17,8 @@ pub fn draw_character_info(
     characters: Query<(
         Entity,
         &CharacterName,
+        &CharacterLevel,
+        &CharacterExperience,
         &CharacterAttribute<Health>,
         &CharacterAttribute<Strength>,
         &CharacterAttribute<Agility>,
@@ -32,7 +35,8 @@ pub fn draw_character_info(
         return;
     };
 
-    let (character, name, health, strength, agility, helmet, chest, weapon) = character;
+    let (character, name, level, experience, health, strength, agility, helmet, chest, weapon) =
+        character;
 
     egui::Window::new(&name.0)
         .anchor(egui::Align2::RIGHT_TOP, egui::Vec2::ZERO)
@@ -47,30 +51,46 @@ pub fn draw_character_info(
                         commands.add(ImpersonateCommand(character));
                     }
                 });
+
+                draw_row(ui, "Level:", |ui| {
+                    ui.label(level.0.to_string());
+                });
+
+                draw_row(ui, "Experience:", |ui| {
+                    draw_progress(
+                        ui,
+                        experience.0 as f32,
+                        level.experience_for_level_up().0 as f32,
+                        egui::Color32::GOLD,
+                    );
+                });
             });
 
             draw_grid("Attributes", ui, |ui| {
-                draw_progress(
-                    ui,
-                    "Health:",
-                    health.current as f32,
-                    health.max as f32,
-                    egui::Color32::RED,
-                );
-                draw_progress(
-                    ui,
-                    "Strength:",
-                    strength.current as f32,
-                    strength.max as f32,
-                    egui::Color32::DARK_GRAY,
-                );
-                draw_progress(
-                    ui,
-                    "Agility:",
-                    agility.current as f32,
-                    agility.max as f32,
-                    egui::Color32::DARK_GREEN,
-                );
+                draw_row(ui, "Health:", |ui| {
+                    draw_progress(
+                        ui,
+                        health.current as f32,
+                        health.max as f32,
+                        egui::Color32::RED,
+                    );
+                });
+                draw_row(ui, "Strength:", |ui| {
+                    draw_progress(
+                        ui,
+                        strength.current as f32,
+                        strength.max as f32,
+                        egui::Color32::DARK_GRAY,
+                    );
+                });
+                draw_row(ui, "Agility:", |ui| {
+                    draw_progress(
+                        ui,
+                        agility.current as f32,
+                        agility.max as f32,
+                        egui::Color32::DARK_GREEN,
+                    );
+                });
             });
 
             draw_grid("Equipment", ui, |ui| {
