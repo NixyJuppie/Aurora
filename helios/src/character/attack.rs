@@ -4,22 +4,20 @@ use bevy_rapier3d::prelude::*;
 
 use crate::character::attributes::{CharacterAttribute, Health};
 use crate::character::equipment::{CharacterEquipment, Chest, EquipmentSlot, Helmet, Weapon};
-use crate::character::inventory::{CharacterLoot, DropItem};
+use crate::character::inventory::{CharacterLoot, DropItemCommand};
 use crate::character::AttackCooldown;
 use crate::item::armor::ArmorProtection;
 use crate::item::weapon::{DamageType, WeaponDamage, WeaponRange};
 use crate::HeliosCollision;
 
 #[derive(Debug)]
-pub struct AttackCommand {
-    pub attacker: Entity,
-}
+pub struct AttackCommand(pub Entity);
 impl Command for AttackCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
 
         let Some(weapon) = world
-            .get::<CharacterEquipment<Weapon>>(self.attacker)
+            .get::<CharacterEquipment<Weapon>>(self.0)
             .unwrap()
             .entity
         else {
@@ -27,7 +25,7 @@ impl Command for AttackCommand {
             return;
         };
 
-        let mut cooldown = world.get_mut::<AttackCooldown>(self.attacker).unwrap();
+        let mut cooldown = world.get_mut::<AttackCooldown>(self.0).unwrap();
         if !cooldown.0.finished() {
             warn!("Cannot attack during cooldown");
             return;
@@ -36,7 +34,7 @@ impl Command for AttackCommand {
 
         let radius = world.get::<WeaponRange>(weapon).unwrap().0 / 2.0;
         let damage = world.get::<WeaponDamage>(weapon).unwrap().clone();
-        let transform = *world.get::<Transform>(self.attacker).unwrap();
+        let transform = *world.get::<Transform>(self.0).unwrap();
 
         let mut targets = vec![];
         world
@@ -48,7 +46,7 @@ impl Command for AttackCommand {
                 &Collider::ball(radius),
                 QueryFilter::new().groups(HeliosCollision::character_only_groups()),
                 |target| {
-                    if target != self.attacker {
+                    if target != self.0 {
                         targets.push(target);
                     }
                     true
@@ -90,10 +88,7 @@ impl Command for DealDamageCommand {
             );
 
             if health.current == 0 {
-                KillCommand {
-                    target: self.target,
-                }
-                .apply(world);
+                KillCommand(self.target).apply(world);
             }
         }
     }
@@ -113,30 +108,28 @@ fn get_protection<S: EquipmentSlot>(world: &World, target: Entity, damage_type: 
 }
 
 #[derive(Debug)]
-pub struct KillCommand {
-    pub target: Entity,
-}
+pub struct KillCommand(pub Entity);
 impl Command for KillCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
 
-        let items = match world.get::<CharacterLoot>(self.target).unwrap() {
+        let items = match world.get::<CharacterLoot>(self.0).unwrap() {
             CharacterLoot::None => vec![],
             CharacterLoot::Inventory => world
-                .get::<Children>(self.target)
+                .get::<Children>(self.0)
                 .map(|c| c.iter().cloned().collect())
                 .unwrap_or_default(),
             CharacterLoot::Fixed(items) => items.clone(),
         };
 
         for item in items {
-            DropItem {
+            DropItemCommand {
                 item,
-                character: self.target,
+                character: self.0,
             }
             .apply(world);
         }
 
-        world.entity_mut(self.target).despawn_recursive();
+        world.entity_mut(self.0).despawn_recursive();
     }
 }

@@ -3,13 +3,15 @@ use helios::bevy_rapier3d::prelude::*;
 
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::attributes::{CharacterAttribute, Health};
-use helios::character::bundles::{CharacterBundle, PlayerBundle};
+use helios::character::bundles::CharacterBundle;
 use helios::character::equipment::{CharacterEquipment, Weapon};
 use helios::character::inventory::CharacterLoot;
+use helios::character::CharacterName;
 use helios::item::armor::ArmorProtection;
 use helios::item::bundles::{ArmorBundle, WeaponBundle};
 use helios::item::weapon::{DamageType, WeaponDamage, WeaponRange};
 use helios::item::{ItemEquipmentSlot, ItemName};
+use helios::player::Player;
 use helios::{HeliosCollision, HeliosDebugPlugins, HeliosPlugins};
 
 const GAME_NAME: &str = "Aurora";
@@ -34,7 +36,8 @@ fn spawn(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     commands.spawn((
-        PlayerBundle {
+        CharacterBundle {
+            name: CharacterName("Player".to_string()),
             collider: Collider::capsule_y(0.5, 0.5),
             mesh: meshes.add(shape::Capsule::default().into()),
             material: materials.add(Color::GOLD.into()),
@@ -42,15 +45,14 @@ fn spawn(
             ..default()
         },
         LockedAxes::ROTATION_LOCKED,
-        GameCameraTarget {
-            offset: Vec3::new(0.0, 4.0, 10.0),
-        },
+        GameCameraTarget,
+        Player,
     ));
 
     let enemy_sword = commands
         .spawn((
             WeaponBundle {
-                name: ItemName("Enemy Sword".to_string()),
+                name: ItemName("Longsword".to_string()),
                 damage: WeaponDamage {
                     damage: 10,
                     damage_type: DamageType::Physical,
@@ -68,6 +70,7 @@ fn spawn(
     commands
         .spawn((
             CharacterBundle {
+                name: CharacterName("Enemy".to_string()),
                 health: CharacterAttribute::<Health>::new(20),
                 collider: Collider::capsule_y(0.5, 0.5),
                 mesh: meshes.add(shape::Capsule::default().into()),
@@ -142,35 +145,11 @@ fn spawn_world(
     // ground
     commands.spawn((
         PbrBundle {
-            mesh: meshes.add(shape::Plane::from_size(20.0).into()),
+            mesh: meshes.add(shape::Plane::from_size(50.0).into()),
             material: materials.add(Color::BEIGE.into()),
             ..default()
         },
-        Collider::cuboid(10.0, 0.01, 10.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step1
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-5.0, 0.3, 0.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.3, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.15, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step2
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-7.0, 0.6, 0.0),
-            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
-            material: materials.add(Color::BLACK.into()),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
+        Collider::cuboid(25.0, 0.01, 25.0),
         HeliosCollision::world_groups(),
     ));
 
@@ -184,6 +163,90 @@ fn spawn_world(
             ..default()
         },
         Collider::cuboid(3.0, 0.25, 3.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step1
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-5.0, 0.2, 0.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.3, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.15, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step2
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-7.0, 0.55, 0.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step3
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-7.0, 0.9, -2.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step4
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-7.0, 1.25, -4.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step5
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-9.0, 1.6, -4.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step6
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-9.0, 1.95, -2.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
+        HeliosCollision::world_groups(),
+    ));
+
+    // step7
+    commands.spawn((
+        PbrBundle {
+            transform: Transform::from_xyz(-9.0, 2.3, 0.0),
+            mesh: meshes.add(shape::Box::new(2.0, 0.6, 2.0).into()),
+            material: materials.add(Color::BLACK.into()),
+            ..default()
+        },
+        Collider::cuboid(1.0, 0.3, 1.0),
         HeliosCollision::world_groups(),
     ));
 }

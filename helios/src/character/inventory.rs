@@ -1,4 +1,4 @@
-use crate::character::equipment::UnequipItem;
+use crate::character::equipment::UnequipItemCommand;
 use crate::HeliosCollision;
 use bevy::ecs::system::Command;
 use bevy::prelude::*;
@@ -15,14 +15,12 @@ pub enum CharacterLoot {
 pub const PICKUP_RADIUS: f32 = 2.0;
 
 #[derive(Debug)]
-pub struct PickupItems {
-    pub character: Entity,
-}
-impl Command for PickupItems {
+pub struct PickupItemsCommand(pub Entity);
+impl Command for PickupItemsCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
 
-        let transform = *world.get::<GlobalTransform>(self.character).unwrap();
+        let transform = *world.get::<GlobalTransform>(self.0).unwrap();
         let mut items = vec![];
         world
             .get_resource::<RapierContext>()
@@ -39,9 +37,9 @@ impl Command for PickupItems {
             );
 
         for item in items {
-            PickupItem {
+            PickupItemCommand {
                 item,
-                character: self.character,
+                character: self.0,
             }
             .apply(world);
         }
@@ -49,11 +47,11 @@ impl Command for PickupItems {
 }
 
 #[derive(Debug)]
-pub struct PickupItem {
+pub struct PickupItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
-impl Command for PickupItem {
+impl Command for PickupItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
         debug_assert!(!world.entity(self.item).contains::<Parent>());
@@ -67,11 +65,11 @@ impl Command for PickupItem {
 }
 
 #[derive(Debug)]
-pub struct DropItem {
+pub struct DropItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
-impl Command for DropItem {
+impl Command for DropItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
         debug_assert!(world
@@ -79,7 +77,7 @@ impl Command for DropItem {
             .get::<Parent>()
             .is_some_and(|p| p.get() == self.character));
 
-        UnequipItem {
+        UnequipItemCommand {
             character: self.character,
             item: self.item,
         }

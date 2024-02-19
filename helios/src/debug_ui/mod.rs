@@ -1,5 +1,5 @@
 mod character_info;
-mod world_item_info;
+mod item_info;
 
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -12,7 +12,7 @@ use crate::character::equipment::{CharacterEquipment, Weapon};
 use crate::character::inventory::PICKUP_RADIUS;
 use crate::character::CharacterName;
 use crate::debug_ui::character_info::draw_character_info;
-use crate::debug_ui::world_item_info::draw_world_item_info;
+use crate::debug_ui::item_info::draw_item_info;
 use crate::item::weapon::WeaponRange;
 
 pub struct DebugUiPlugin;
@@ -27,7 +27,7 @@ impl Plugin for DebugUiPlugin {
         app.add_systems(Update, draw_pickup_range_gizmos);
         app.add_systems(Update, focus_entity);
         app.add_systems(Update, draw_character_info);
-        app.add_systems(Update, draw_world_item_info);
+        app.add_systems(Update, draw_item_info);
     }
 }
 
@@ -105,7 +105,7 @@ pub fn draw_grid(header: &str, ui: &mut egui::Ui, content: impl FnOnce(&mut egui
 
 pub fn draw_row(ui: &mut egui::Ui, label: &str, draw_content: impl FnOnce(&mut egui::Ui)) {
     ui.label(RichText::new(label).strong());
-    draw_content(ui);
+    ui.horizontal(|ui| draw_content(ui));
     ui.end_row();
 }
 

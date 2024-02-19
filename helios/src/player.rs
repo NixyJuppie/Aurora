@@ -1,8 +1,10 @@
+use bevy::ecs::system::Command;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::rapier::math::DEFAULT_EPSILON;
 
 use crate::character::attack::AttackCommand;
-use crate::character::inventory::PickupItems;
+use crate::character::inventory::PickupItemsCommand;
 use crate::character::AttackCooldown;
 use crate::input::GameplayInput;
 
@@ -12,6 +14,7 @@ impl Plugin for PlayerPlugin {
         app.add_systems(Update, move_player);
         app.add_systems(Update, rotate_player);
         app.add_systems(Update, pickup_items);
+        app.add_systems(Update, jump);
         app.add_systems(Update, attack);
     }
 }
@@ -19,8 +22,23 @@ impl Plugin for PlayerPlugin {
 #[derive(Component, Default, Debug)]
 pub struct Player;
 
+pub struct ImpersonateCommand(pub Entity);
+impl Command for ImpersonateCommand {
+    fn apply(self, world: &mut World) {
+        for player in world
+            .query_filtered::<Entity, With<Player>>()
+            .iter(world)
+            .collect::<Vec<Entity>>()
+        {
+            world.entity_mut(player).remove::<Player>();
+        }
+
+        world.entity_mut(self.0).insert(Player);
+    }
+}
+
 fn move_player(
-    mut players: Query<&mut KinematicCharacterController, With<Player>>,
+    mut players: Query<(&mut KinematicCharacterController, &Transform), With<Player>>,
     input: Res<GameplayInput>,
     time: Res<Time>,
 ) {
@@ -29,10 +47,9 @@ fn move_player(
     };
 
     const METERS_PER_SECOND: f32 = 10.0;
-    for mut player in players.iter_mut() {
-        let movement =
-            Vec3::new(movement.x, 0.0, -movement.y) * METERS_PER_SECOND * time.delta_seconds();
-        player.translation = Some(movement);
+    for (mut controller, transform) in players.iter_mut() {
+        let direction = (transform.forward() * movement.y) + (transform.right() * movement.x);
+        controller.translation = Some(direction * METERS_PER_SECOND * time.delta_seconds());
     }
 }
 
@@ -52,6 +69,22 @@ fn rotate_player(
     }
 }
 
+fn jump(
+    mut players: Query<(&mut Velocity, &KinematicCharacterController), With<Player>>,
+    input: Res<GameplayInput>,
+) {
+    if !input.jump {
+        return;
+    }
+
+    const JUMP_VELOCITY: f32 = 7.5;
+    for (mut velocity, controller) in players.iter_mut() {
+        if velocity.linvel.y.abs() < DEFAULT_EPSILON {
+            velocity.linvel += controller.up * JUMP_VELOCITY;
+        }
+    }
+}
+
 fn attack(
     mut commands: Commands,
     players: Query<(&AttackCooldown, Entity), With<Player>>,
@@ -62,7 +95,7 @@ fn attack(
     }
 
     for (_, player) in players.iter().filter(|(c, _)| c.0.finished()) {
-        commands.add(AttackCommand { attacker: player })
+        commands.add(AttackCommand(player))
     }
 }
 
@@ -76,6 +109,6 @@ fn pickup_items(
     }
 
     for player in players.iter() {
-        commands.add(PickupItems { character: player })
+        commands.add(PickupItemsCommand(player))
     }
 }

@@ -1,3 +1,4 @@
+use bevy::ecs::system::Command;
 use bevy::prelude::*;
 
 pub struct CameraPlugin;
@@ -11,17 +12,37 @@ impl Plugin for CameraPlugin {
 pub struct GameCamera;
 
 #[derive(Component, Default, Debug)]
-pub struct GameCameraTarget {
-    pub offset: Vec3,
-}
+pub struct GameCameraTarget;
 
 fn update_camera(
     mut camera: Query<&mut Transform, (With<GameCamera>, Without<GameCameraTarget>)>,
-    target: Query<(&Transform, &GameCameraTarget), Without<GameCamera>>,
+    target: Query<&Transform, (With<GameCameraTarget>, Without<GameCamera>)>,
 ) {
-    let mut camera_transform = camera.single_mut();
-    let (target_transform, target) = target.single();
+    const UP_DISTANCE: f32 = 5.0;
+    const BACK_DISTANCE: f32 = 10.0;
 
-    camera_transform.translation = target_transform.translation + target.offset;
+    let mut camera_transform = camera.single_mut();
+    let Ok(target_transform) = target.get_single() else {
+        return;
+    };
+
+    camera_transform.translation = target_transform.translation
+        + (target_transform.back() * BACK_DISTANCE)
+        + (target_transform.up() * UP_DISTANCE);
     camera_transform.look_at(target_transform.translation, Vec3::Y);
+}
+
+pub struct FollowTargetCommand(pub Entity);
+impl Command for FollowTargetCommand {
+    fn apply(self, world: &mut World) {
+        for player in world
+            .query_filtered::<Entity, With<GameCameraTarget>>()
+            .iter(world)
+            .collect::<Vec<Entity>>()
+        {
+            world.entity_mut(player).remove::<GameCameraTarget>();
+        }
+
+        world.entity_mut(self.0).insert(GameCameraTarget);
+    }
 }

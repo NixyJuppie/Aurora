@@ -33,11 +33,11 @@ pub struct Helmet;
 pub struct Weapon;
 
 #[derive(Debug)]
-pub struct EquipItem {
+pub struct EquipItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
-impl Command for EquipItem {
+impl Command for EquipItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
         debug_assert!(world
@@ -63,7 +63,7 @@ fn equip<S: EquipmentSlot>(world: &mut World, character: Entity, item: Entity) {
         .unwrap()
         .entity
     {
-        UnequipItem {
+        UnequipItemCommand {
             character,
             item: previous_item,
         }
@@ -77,11 +77,11 @@ fn equip<S: EquipmentSlot>(world: &mut World, character: Entity, item: Entity) {
 }
 
 #[derive(Debug)]
-pub struct UnequipItem {
+pub struct UnequipItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
-impl Command for UnequipItem {
+impl Command for UnequipItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
         debug_assert!(world

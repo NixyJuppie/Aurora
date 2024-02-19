@@ -14,6 +14,7 @@ pub struct GameplayInput {
     pub rotate: Option<f32>,
     pub attack: bool,
     pub pickup: bool,
+    pub jump: bool,
 }
 
 fn update_gameplay_input(
@@ -42,13 +43,19 @@ fn update_gameplay_input(
         .iter()
         .map(|g| gamepad_buttons.pressed(GamepadButton::new(g, GamepadButtonType::RightTrigger)))
         .any(|v| v)
-        || keyboard.pressed(KeyCode::Space);
+        || keyboard.pressed(KeyCode::ControlLeft);
 
     input.pickup = gamepads
         .iter()
         .map(|g| gamepad_buttons.pressed(GamepadButton::new(g, GamepadButtonType::South)))
         .any(|v| v)
         || keyboard.pressed(KeyCode::F);
+
+    input.jump = gamepads
+        .iter()
+        .map(|g| gamepad_buttons.pressed(GamepadButton::new(g, GamepadButtonType::East)))
+        .any(|v| v)
+        || keyboard.pressed(KeyCode::Space);
 }
 
 fn merge_inputs<T>(first: Option<T>, second: Option<T>) -> Option<T> {

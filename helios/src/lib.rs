@@ -13,10 +13,10 @@ use bevy_screen_diagnostics::{
 use bitflags::bitflags;
 
 use camera::CameraPlugin;
-use character::player::PlayerPlugin;
 use character::CharacterPlugin;
 use debug_ui::DebugUiPlugin;
 use input::InputPlugin;
+use player::PlayerPlugin;
 
 pub mod camera;
 pub mod character;
@@ -24,6 +24,7 @@ pub mod input;
 pub mod item;
 
 mod debug_ui;
+pub mod player;
 
 pub struct HeliosPlugins;
 impl PluginGroup for HeliosPlugins {

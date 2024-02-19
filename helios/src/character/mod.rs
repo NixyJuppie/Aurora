@@ -1,6 +1,6 @@
 use crate::character::attack::AttackCommand;
 use crate::character::equipment::{CharacterEquipment, Weapon};
-use crate::character::player::Player;
+use crate::player::Player;
 use bevy::prelude::*;
 use smart_default::SmartDefault;
 
@@ -9,7 +9,6 @@ pub mod attributes;
 pub mod bundles;
 pub mod equipment;
 pub mod inventory;
-pub mod player;
 
 pub struct CharacterPlugin;
 impl Plugin for CharacterPlugin {
@@ -39,8 +38,6 @@ fn temp_attack(
         .iter()
         .filter(|(_, w, c)| w.entity.is_some() && c.0.finished())
     {
-        commands.add(AttackCommand {
-            attacker: character,
-        });
+        commands.add(AttackCommand(character));
     }
 }
