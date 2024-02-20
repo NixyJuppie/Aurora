@@ -14,6 +14,7 @@ use crate::character::CharacterName;
 use crate::debug_ui::character_info::draw_character_info;
 use crate::debug_ui::item_info::draw_item_info;
 use crate::item::weapon::WeaponRange;
+use crate::HeliosCollision;
 
 pub struct DebugUiPlugin;
 impl Plugin for DebugUiPlugin {
@@ -86,6 +87,7 @@ fn focus_entity(
     if input.just_pressed(MouseButton::Left) {
         let window = window.single();
         let (camera, camera_transform) = camera.single();
+        let groups = HeliosCollision::CHARACTER | HeliosCollision::ITEM;
         if let Some((target, _)) = window
             .cursor_position()
             .and_then(|position| camera.viewport_to_world(camera_transform, position))
@@ -93,12 +95,13 @@ fn focus_entity(
                 rapier.cast_ray(
                     ray.origin,
                     ray.direction.into(),
-                    25.0,
+                    100.0,
                     true,
-                    QueryFilter::new(),
+                    QueryFilter::new().groups(CollisionGroups::new(groups.into(), groups.into())),
                 )
             })
         {
+            info!("{:?}", target);
             focus.0 = Some(target);
         }
     }

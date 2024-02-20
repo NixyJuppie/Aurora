@@ -62,6 +62,7 @@ impl PluginGroup for HeliosDebugPlugins {
 }
 
 bitflags! {
+    #[derive(Copy, Clone)]
     pub struct HeliosCollision: u32 {
         const WORLD = 1 << 0;
         const CHARACTER = 1 << 1;
