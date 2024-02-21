@@ -2,6 +2,7 @@ use helios::bevy::prelude::*;
 use helios::bevy_rapier3d::prelude::*;
 
 use helios::camera::{GameCamera, GameCameraTarget};
+use helios::character::ai::EnemyRange;
 use helios::character::attributes::{CharacterAttribute, Health};
 use helios::character::bundles::CharacterBundle;
 use helios::character::equipment::{CharacterEquipment, Weapon};
@@ -50,50 +51,33 @@ fn spawn(
         Player,
     ));
 
-    let enemy_sword = commands
-        .spawn((
-            WeaponBundle {
-                name: ItemName("Longsword".to_string()),
-                damage: WeaponDamage {
-                    damage: 10,
-                    damage_type: DamageType::Physical,
-                },
-                range: WeaponRange(3.0),
-                collider: Collider::cuboid(0.2, 0.1, 0.5),
-                mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
-                material: materials.add(Color::RED),
-                visibility: Visibility::Hidden,
-                ..default()
-            },
-            RigidBodyDisabled,
-        ))
-        .id();
-    commands
-        .spawn((
-            CharacterBundle {
-                name: CharacterName("Enemy".to_string()),
-                level: CharacterLevel(30),
-                health: CharacterAttribute::<Health>::new(20),
-                collider: Collider::capsule_y(0.5, 0.5),
-                mesh: meshes.add(Capsule3d::new(0.5, 1.0)),
-                material: materials.add(Color::RED),
-                transform: Transform::from_xyz(-2.0, 2.0, -5.0)
-                    .with_rotation(Quat::from_rotation_y(f32::to_radians(-135.0))),
-                loot: CharacterLoot::Inventory,
-                weapon: CharacterEquipment::<Weapon>::new(Some(enemy_sword)),
-                ..default()
-            },
-            LockedAxes::ROTATION_LOCKED,
-        ))
-        .add_child(enemy_sword);
+    spawn_enemy(
+        &mut commands,
+        &mut materials,
+        &mut meshes,
+        Transform::from_xyz(-10.0, 2.0, -20.0),
+        Color::ORANGE_RED,
+        10,
+        5.0,
+    );
+
+    spawn_enemy(
+        &mut commands,
+        &mut materials,
+        &mut meshes,
+        Transform::from_xyz(10.0, 2.0, -20.0),
+        Color::RED,
+        25,
+        3.0,
+    );
 
     commands.spawn(WeaponBundle {
-        name: ItemName("Sword".to_string()),
+        name: ItemName("Dagger".to_string()),
         damage: WeaponDamage {
             damage: 10,
             damage_type: DamageType::Physical,
         },
-        range: WeaponRange(2.0),
+        range: WeaponRange(1.5),
         collider: Collider::cuboid(0.2, 0.1, 0.5),
         mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
         material: materials.add(Color::DARK_GRAY),
@@ -122,13 +106,65 @@ fn spawn(
         ..default()
     });
 
-    spawn_world(commands, materials, meshes);
+    spawn_world(&mut commands, &mut materials, &mut meshes);
+}
+
+fn spawn_enemy(
+    commands: &mut Commands,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    transform: Transform,
+    color: Color,
+    weapon_damage: u32,
+    weapon_range: f32,
+) {
+    let weapon_name = if weapon_range > 4.0 {
+        "Longsword"
+    } else {
+        "Sword"
+    };
+    let enemy_sword = commands
+        .spawn((
+            WeaponBundle {
+                name: ItemName(weapon_name.to_string()),
+                damage: WeaponDamage {
+                    damage: weapon_damage,
+                    damage_type: DamageType::Physical,
+                },
+                range: WeaponRange(weapon_range),
+                collider: Collider::cuboid(0.2, 0.1, 0.5),
+                mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
+                material: materials.add(color),
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+            RigidBodyDisabled,
+        ))
+        .id();
+    commands
+        .spawn((
+            EnemyRange(17.5),
+            CharacterBundle {
+                transform,
+                name: CharacterName("Enemy".to_string()),
+                level: CharacterLevel(30),
+                health: CharacterAttribute::<Health>::new(20),
+                collider: Collider::capsule_y(0.5, 0.5),
+                mesh: meshes.add(Capsule3d::new(0.5, 1.0)),
+                material: materials.add(color),
+                loot: CharacterLoot::Inventory,
+                weapon: CharacterEquipment::<Weapon>::new(Some(enemy_sword)),
+                ..default()
+            },
+            LockedAxes::ROTATION_LOCKED,
+        ))
+        .add_child(enemy_sword);
 }
 
 fn spawn_world(
-    mut commands: Commands,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
+    commands: &mut Commands,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    meshes: &mut ResMut<Assets<Mesh>>,
 ) {
     // light
     commands.spawn(DirectionalLightBundle {
@@ -147,11 +183,11 @@ fn spawn_world(
     // ground
     commands.spawn((
         PbrBundle {
-            mesh: meshes.add(Cuboid::new(50.0, 0.02, 50.0)),
+            mesh: meshes.add(Cuboid::new(100.0, 0.02, 100.0)),
             material: materials.add(Color::GRAY),
             ..default()
         },
-        Collider::cuboid(25.0, 0.01, 25.0),
+        Collider::cuboid(50.0, 0.01, 50.0),
         HeliosCollision::world_groups(),
     ));
 
@@ -168,87 +204,40 @@ fn spawn_world(
         HeliosCollision::world_groups(),
     ));
 
-    // step1
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-5.0, 0.2, 0.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.3, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.15, 1.0),
-        HeliosCollision::world_groups(),
-    ));
+    // stairs
+    let mesh = meshes.add(Cuboid::new(2.0, 0.3, 2.0));
+    let material = materials.add(Color::BLACK);
+    for i in 0..10 {
+        commands.spawn((
+            PbrBundle {
+                mesh: mesh.clone(),
+                material: material.clone(),
+                transform: Transform::from_xyz(
+                    -5.0 - (2.0 * i as f32),
+                    0.2 + (0.35 * i as f32),
+                    5.0,
+                ),
+                ..default()
+            },
+            Collider::cuboid(1.0, 0.15, 1.0),
+            HeliosCollision::world_groups(),
+        ));
+    }
 
-    // step2
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-7.0, 0.55, 0.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step3
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-7.0, 0.9, -2.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step4
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-7.0, 1.25, -4.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step5
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-9.0, 1.6, -4.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step6
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-9.0, 1.95, -2.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
-
-    // step7
-    commands.spawn((
-        PbrBundle {
-            transform: Transform::from_xyz(-9.0, 2.3, 0.0),
-            mesh: meshes.add(Cuboid::new(2.0, 0.6, 2.0)),
-            material: materials.add(Color::BLACK),
-            ..default()
-        },
-        Collider::cuboid(1.0, 0.3, 1.0),
-        HeliosCollision::world_groups(),
-    ));
+    for i in 0..10 {
+        commands.spawn((
+            PbrBundle {
+                mesh: mesh.clone(),
+                material: material.clone(),
+                transform: Transform::from_xyz(
+                    -25.0,
+                    3.7 + (0.35 * i as f32),
+                    5.0 - (2.0 * i as f32),
+                ),
+                ..default()
+            },
+            Collider::cuboid(1.0, 0.15, 1.0),
+            HeliosCollision::world_groups(),
+        ));
+    }
 }

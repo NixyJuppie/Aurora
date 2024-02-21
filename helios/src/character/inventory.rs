@@ -16,9 +16,10 @@ pub const PICKUP_RADIUS: f32 = 2.0;
 
 #[derive(Debug)]
 pub struct PickupItemsCommand(pub Entity);
+
 impl Command for PickupItemsCommand {
     fn apply(self, world: &mut World) {
-        info!("{:?}", self);
+        debug!("{:?}", self);
 
         let transform = *world.get::<GlobalTransform>(self.0).unwrap();
         let mut items = vec![];
@@ -51,6 +52,7 @@ pub struct PickupItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
+
 impl Command for PickupItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
@@ -69,6 +71,7 @@ pub struct DropItemCommand {
     pub character: Entity,
     pub item: Entity,
 }
+
 impl Command for DropItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);

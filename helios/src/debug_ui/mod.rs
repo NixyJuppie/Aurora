@@ -17,6 +17,7 @@ use crate::item::weapon::WeaponRange;
 use crate::HeliosCollision;
 
 pub struct DebugUiPlugin;
+
 impl Plugin for DebugUiPlugin {
     fn build(&self, app: &mut App) {
         if !app.is_plugin_added::<EguiPlugin>() {
@@ -101,7 +102,6 @@ fn focus_entity(
                 )
             })
         {
-            info!("{:?}", target);
             focus.0 = Some(target);
         }
     }

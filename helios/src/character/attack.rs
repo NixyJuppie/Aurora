@@ -13,6 +13,7 @@ use crate::HeliosCollision;
 
 #[derive(Debug)]
 pub struct AttackCommand(pub Entity);
+
 impl Command for AttackCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
@@ -76,7 +77,7 @@ pub struct DealDamageCommand {
 
 impl Command for DealDamageCommand {
     fn apply(self, world: &mut World) {
-        info!("{:?}", self);
+        debug!("{:?}", self);
 
         let protection = get_protections(world, self.target, self.damage_type);
         let damage = self.damage.saturating_sub(protection);
@@ -119,6 +120,7 @@ pub struct KillCommand {
     pub killer: Entity,
     pub target: Entity,
 }
+
 impl Command for KillCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
