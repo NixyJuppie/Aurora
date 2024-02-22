@@ -41,7 +41,7 @@ pub fn follow_and_attack_player(
             let distance = difference.length().abs();
 
             const METERS_PER_SECOND: f32 = 5.0;
-            if distance >= weapon_range.0 && distance < range.0 {
+            if distance >= weapon_range.0 / 2.0 && distance < range.0 {
                 let look_target = Vec3::new(
                     player.translation.x,
                     transform.translation.y,
