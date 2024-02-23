@@ -3,6 +3,7 @@ use smart_default::SmartDefault;
 
 pub mod armor;
 pub mod bundles;
+pub mod container;
 pub mod weapon;
 
 #[derive(Component, SmartDefault, Debug)]

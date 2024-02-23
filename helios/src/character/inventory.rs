@@ -1,4 +1,5 @@
 use crate::character::equipment::UnequipItemCommand;
+use crate::item::container::ItemContainerName;
 use crate::HeliosCollision;
 use bevy::ecs::system::Command;
 use bevy::prelude::*;
@@ -56,7 +57,16 @@ pub struct PickupItemCommand {
 impl Command for PickupItemCommand {
     fn apply(self, world: &mut World) {
         info!("{:?}", self);
-        debug_assert!(!world.entity(self.item).contains::<Parent>());
+
+        #[cfg(debug_assertions)]
+        {
+            // Item can only be picked up from world (no parent) or from container
+            if world.entity(self.item).contains::<Parent>() {
+                debug_assert!(world
+                    .get::<Parent>(self.item)
+                    .is_some_and(|p| world.entity(p.get()).contains::<ItemContainerName>()));
+            }
+        }
 
         world.entity_mut(self.character).add_child(self.item);
 

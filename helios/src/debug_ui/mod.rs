@@ -1,4 +1,5 @@
 mod character_info;
+mod container_info;
 mod item_info;
 
 use bevy::prelude::*;
@@ -11,10 +12,11 @@ use crate::camera::GameCamera;
 use crate::character::equipment::{CharacterEquipment, Weapon};
 use crate::character::inventory::PICKUP_RADIUS;
 use crate::character::CharacterName;
-use crate::debug_ui::character_info::draw_character_info;
-use crate::debug_ui::item_info::draw_item_info;
 use crate::item::weapon::WeaponRange;
 use crate::HeliosCollision;
+use character_info::draw_character_info;
+use container_info::draw_container_info;
+use item_info::draw_item_info;
 
 pub struct DebugUiPlugin;
 
@@ -30,6 +32,7 @@ impl Plugin for DebugUiPlugin {
         app.add_systems(Update, focus_entity);
         app.add_systems(Update, draw_character_info);
         app.add_systems(Update, draw_item_info);
+        app.add_systems(Update, draw_container_info);
     }
 }
 
@@ -88,7 +91,8 @@ fn focus_entity(
     if input.just_pressed(MouseButton::Left) {
         let window = window.single();
         let (camera, camera_transform) = camera.single();
-        let groups = HeliosCollision::CHARACTER | HeliosCollision::ITEM;
+        let groups =
+            HeliosCollision::CHARACTER | HeliosCollision::ITEM | HeliosCollision::CONTAINER;
         if let Some((target, _)) = window
             .cursor_position()
             .and_then(|position| camera.viewport_to_world(camera_transform, position))

@@ -10,7 +10,8 @@ use helios::character::experience::CharacterLevel;
 use helios::character::inventory::CharacterLoot;
 use helios::character::CharacterName;
 use helios::item::armor::ArmorProtection;
-use helios::item::bundles::{ArmorBundle, WeaponBundle};
+use helios::item::bundles::{ArmorBundle, ItemContainerBundle, WeaponBundle};
+use helios::item::container::ItemContainerName;
 use helios::item::weapon::{DamageType, WeaponDamage, WeaponRange};
 use helios::item::{ItemEquipmentSlot, ItemName};
 use helios::player::Player;
@@ -81,30 +82,52 @@ fn spawn(
         collider: Collider::cuboid(0.2, 0.1, 0.5),
         mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
         material: materials.add(Color::DARK_GRAY),
-        transform: Transform::from_xyz(5.0, 5.0, -2.0),
+        transform: Transform::from_xyz(6.0, 5.0, -2.0),
         ..default()
     });
 
-    commands.spawn(ArmorBundle {
-        name: ItemName("Chainmail".to_string()),
-        protection: ArmorProtection { physical: 5 },
-        collider: Collider::cuboid(0.5, 0.1, 0.5),
-        mesh: meshes.add(Cuboid::new(1.0, 0.2, 1.0)),
-        material: materials.add(Color::BLUE),
-        transform: Transform::from_xyz(7.0, 5.0, -2.0),
-        ..default()
-    });
+    let chainmail = commands
+        .spawn((
+            ArmorBundle {
+                name: ItemName("Chainmail".to_string()),
+                protection: ArmorProtection { physical: 5 },
+                collider: Collider::cuboid(0.5, 0.1, 0.5),
+                mesh: meshes.add(Cuboid::new(1.0, 0.2, 1.0)),
+                material: materials.add(Color::BLUE),
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+            RigidBodyDisabled,
+        ))
+        .id();
 
-    commands.spawn(ArmorBundle {
-        slot: ItemEquipmentSlot::Helmet,
-        name: ItemName("Crown".to_string()),
-        protection: ArmorProtection { physical: 4 },
-        collider: Collider::cuboid(0.3, 0.1, 0.3),
-        mesh: meshes.add(Cuboid::new(0.6, 0.2, 0.6)),
-        material: materials.add(Color::GOLD),
-        transform: Transform::from_xyz(6.0, 5.0, -1.0),
-        ..default()
-    });
+    let crown = commands
+        .spawn((
+            ArmorBundle {
+                slot: ItemEquipmentSlot::Helmet,
+                name: ItemName("Crown".to_string()),
+                protection: ArmorProtection { physical: 4 },
+                collider: Collider::cuboid(0.3, 0.1, 0.3),
+                mesh: meshes.add(Cuboid::new(0.6, 0.2, 0.6)),
+                material: materials.add(Color::GOLD),
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+            RigidBodyDisabled,
+        ))
+        .id();
+
+    commands
+        .spawn(ItemContainerBundle {
+            name: ItemContainerName("Chest".to_string()),
+            transform: Transform::from_xyz(13.0, 1.0, 2.0),
+            mesh: meshes.add(Cuboid::new(3.0, 1.5, 2.0)),
+            collider: Collider::cuboid(1.5, 0.75, 1.0),
+            material: materials.add(Color::rgb_u8(139, 69, 19)),
+            ..default()
+        })
+        .add_child(chainmail)
+        .add_child(crown);
 
     spawn_world(&mut commands, &mut materials, &mut meshes);
 }

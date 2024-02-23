@@ -50,7 +50,9 @@ pub fn follow_and_attack_player(
                 transform.look_at(look_target, Vec3::Y);
                 controller.translation = Some(direction * METERS_PER_SECOND * time.delta_seconds());
 
-                if player.translation.y > transform.translation.y + (weapon_range.0 / 2.0) {
+                if distance <= weapon_range.0 * 2.0
+                    && player.translation.y > transform.translation.y + (weapon_range.0 / 2.0)
+                {
                     const JUMP_VELOCITY: f32 = 7.5;
                     if velocity.linvel.y.abs() < DEFAULT_EPSILON {
                         velocity.linvel += controller.up * JUMP_VELOCITY;

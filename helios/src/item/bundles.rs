@@ -3,6 +3,7 @@ use bevy_rapier3d::prelude::*;
 use smart_default::SmartDefault;
 
 use crate::item::armor::ArmorProtection;
+use crate::item::container::ItemContainerName;
 use crate::item::weapon::{WeaponDamage, WeaponRange};
 use crate::item::{ItemEquipmentSlot, ItemName};
 use crate::HeliosCollision;
@@ -70,5 +71,25 @@ pub struct ArmorBundle {
     pub rigidbody: RigidBody,
     pub collider: Collider,
     #[default(HeliosCollision::item_groups())]
+    pub collision_groups: CollisionGroups,
+}
+
+#[derive(Bundle, SmartDefault, Debug)]
+pub struct ItemContainerBundle {
+    #[default(ItemContainerName("Container".to_string()))]
+    pub name: ItemContainerName,
+    // core
+    pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
+    // mesh
+    pub mesh: Handle<Mesh>,
+    pub material: Handle<StandardMaterial>,
+    pub transform: Transform,
+    // physics
+    pub rigidbody: RigidBody,
+    pub collider: Collider,
+    #[default(HeliosCollision::container_groups())]
     pub collision_groups: CollisionGroups,
 }

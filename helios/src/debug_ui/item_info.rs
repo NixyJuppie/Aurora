@@ -6,6 +6,7 @@ use crate::character::inventory::{DropItemCommand, PickupItemCommand};
 use crate::character::CharacterName;
 use crate::debug_ui::{draw_grid, draw_row, FocusedEntity};
 use crate::item::armor::ArmorProtection;
+use crate::item::container::ItemContainerName;
 use crate::item::weapon::{WeaponDamage, WeaponRange};
 use crate::item::{ItemEquipmentSlot, ItemName};
 use crate::player::Player;
@@ -20,6 +21,7 @@ pub fn draw_item_info(
         Option<&ArmorProtection>,
     )>,
     characters: Query<(Entity, &CharacterName)>,
+    containers: Query<(Entity, &ItemContainerName)>,
     player: Query<Entity, With<Player>>,
     mut focus: ResMut<FocusedEntity>,
     mut commands: Commands,
@@ -39,15 +41,19 @@ pub fn draw_item_info(
                     ui.label(&format!("{:?}", item));
                 });
                 if let Some(owner) = parent.map(|p| p.get()) {
-                    draw_row(ui, "Owner:", |ui| match characters.get(owner) {
-                        Ok((owner, name)) => {
-                            ui.label(format!("{} ({:?})", name.0, owner));
+                    draw_row(ui, "Owner:", |ui| {
+                        if let Ok((character, name)) = characters.get(owner) {
+                            ui.label(format!("{} ({:?})", name.0, character));
                             if ui.button("Focus").clicked() {
-                                focus.0 = Some(owner);
+                                focus.0 = Some(character);
                             }
-                        }
-                        Err(e) => {
-                            ui.label(format!("Unknown ({:?})", e));
+                        } else if let Ok((container, name)) = containers.get(owner) {
+                            ui.label(format!("{} ({:?})", name.0, container));
+                            if ui.button("Focus").clicked() {
+                                focus.0 = Some(container);
+                            }
+                        } else {
+                            ui.label(format!("Unknown ({:?})", owner));
                         }
                     });
                 }
@@ -55,21 +61,21 @@ pub fn draw_item_info(
                     ui.label(format!("{:?}", slot));
                 });
                 draw_row(ui, "Actions:", |ui| {
-                    if let Some(owner) = parent {
+                    if let Some((owner, _)) = parent.and_then(|x| characters.get(x.get()).ok()) {
                         if ui.button("Equip").clicked() {
                             commands.add(EquipItemCommand {
                                 item,
-                                character: owner.get(),
+                                character: owner,
                             });
                         }
 
                         if ui.button("Drop").clicked() {
                             commands.add(DropItemCommand {
                                 item,
-                                character: owner.get(),
+                                character: owner,
                             });
                         }
-                    } else if let Ok(player) = player.get_single() {
+                    } else if let Some(player) = player.iter().next() {
                         if ui.button("Pickup (Player)").clicked() {
                             commands.add(PickupItemCommand {
                                 item,

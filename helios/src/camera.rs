@@ -2,6 +2,7 @@ use bevy::ecs::system::Command;
 use bevy::prelude::*;
 
 pub struct CameraPlugin;
+
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, update_camera);
@@ -22,7 +23,7 @@ fn update_camera(
     const BACK_DISTANCE: f32 = 10.0;
 
     let mut camera_transform = camera.single_mut();
-    let Ok(target_transform) = target.get_single() else {
+    let Some(target_transform) = target.iter().next() else {
         return;
     };
 
@@ -33,6 +34,7 @@ fn update_camera(
 }
 
 pub struct FollowTargetCommand(pub Entity);
+
 impl Command for FollowTargetCommand {
     fn apply(self, world: &mut World) {
         for player in world

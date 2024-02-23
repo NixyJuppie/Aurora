@@ -1,4 +1,5 @@
 #![allow(clippy::type_complexity)]
+
 pub use bevy;
 pub use bevy_rapier3d;
 
@@ -27,6 +28,7 @@ mod debug_ui;
 pub mod player;
 
 pub struct HeliosPlugins;
+
 impl PluginGroup for HeliosPlugins {
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
@@ -39,6 +41,7 @@ impl PluginGroup for HeliosPlugins {
 }
 
 pub struct HeliosDebugPlugins;
+
 impl PluginGroup for HeliosDebugPlugins {
     fn build(self) -> PluginGroupBuilder {
         let screen_diagnostics = ScreenDiagnosticsPlugin {
@@ -67,10 +70,12 @@ bitflags! {
         const WORLD = 1 << 0;
         const CHARACTER = 1 << 1;
         const ITEM = 1 << 2;
+        const CONTAINER = 1 << 3;
 
-        const WORLD_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits() | Self::ITEM.bits();
-        const CHARACTER_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits();
-        const ITEM_FILTER = Self::WORLD.bits() | Self::ITEM.bits();
+        const WORLD_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits() | Self::ITEM.bits() | Self::CONTAINER.bits();
+        const CHARACTER_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits() | Self::CONTAINER.bits();
+        const ITEM_FILTER = Self::WORLD.bits() | Self::ITEM.bits() | Self::CONTAINER.bits();
+        const CONTAINER_FILTER = Self::WORLD.bits() | Self::CHARACTER.bits() | Self::ITEM.bits() | Self::CONTAINER.bits();
     }
 }
 
@@ -104,5 +109,12 @@ impl HeliosCollision {
     }
     pub fn item_only_groups() -> CollisionGroups {
         CollisionGroups::new(Self::ITEM.into(), Self::ITEM.into())
+    }
+
+    pub fn container_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::CONTAINER.into(), Self::CONTAINER_FILTER.into())
+    }
+    pub fn container_only_groups() -> CollisionGroups {
+        CollisionGroups::new(Self::CONTAINER.into(), Self::CONTAINER.into())
     }
 }
