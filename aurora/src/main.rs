@@ -1,6 +1,7 @@
 use helios::bevy::prelude::*;
 use helios::bevy_rapier3d::prelude::*;
 
+use helios::bevy::utils::smallvec::smallvec;
 use helios::camera::{GameCamera, GameCameraTarget};
 use helios::character::ai::EnemyRange;
 use helios::character::attributes::{CharacterAttribute, Health};
@@ -12,7 +13,7 @@ use helios::character::CharacterName;
 use helios::item::armor::ArmorProtection;
 use helios::item::bundles::{ArmorBundle, ItemContainerBundle, WeaponBundle};
 use helios::item::container::ItemContainerName;
-use helios::item::weapon::{DamageType, WeaponDamage, WeaponRange};
+use helios::item::weapon::{Damage, DamageType, WeaponDamage, WeaponRange};
 use helios::item::{ItemEquipmentSlot, ItemName};
 use helios::player::Player;
 use helios::{HeliosCollision, HeliosDebugPlugins, HeliosPlugins};
@@ -73,11 +74,17 @@ fn spawn(
     );
 
     commands.spawn(WeaponBundle {
-        name: ItemName("Dagger".to_string()),
-        damage: WeaponDamage {
-            damage: 10,
-            damage_type: DamageType::Physical,
-        },
+        name: ItemName("Fire dagger".to_string()),
+        damage: WeaponDamage(smallvec![
+            Damage {
+                damage: 10,
+                damage_type: DamageType::Physical,
+            },
+            Damage {
+                damage: 5,
+                damage_type: DamageType::Fire,
+            }
+        ]),
         range: WeaponRange(1.5),
         collider: Collider::cuboid(0.2, 0.1, 0.5),
         mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
@@ -90,7 +97,10 @@ fn spawn(
         .spawn((
             ArmorBundle {
                 name: ItemName("Chainmail".to_string()),
-                protection: ArmorProtection { physical: 5 },
+                protection: ArmorProtection {
+                    physical: 5,
+                    ..default()
+                },
                 collider: Collider::cuboid(0.5, 0.1, 0.5),
                 mesh: meshes.add(Cuboid::new(1.0, 0.2, 1.0)),
                 material: materials.add(Color::BLUE),
@@ -106,7 +116,10 @@ fn spawn(
             ArmorBundle {
                 slot: ItemEquipmentSlot::Helmet,
                 name: ItemName("Crown".to_string()),
-                protection: ArmorProtection { physical: 4 },
+                protection: ArmorProtection {
+                    physical: 4,
+                    ..default()
+                },
                 collider: Collider::cuboid(0.3, 0.1, 0.3),
                 mesh: meshes.add(Cuboid::new(0.6, 0.2, 0.6)),
                 material: materials.add(Color::GOLD),
@@ -150,10 +163,10 @@ fn spawn_enemy(
         .spawn((
             WeaponBundle {
                 name: ItemName(weapon_name.to_string()),
-                damage: WeaponDamage {
+                damage: WeaponDamage(smallvec![Damage {
                     damage: weapon_damage,
                     damage_type: DamageType::Physical,
-                },
+                }]),
                 range: WeaponRange(weapon_range),
                 collider: Collider::cuboid(0.2, 0.1, 0.5),
                 mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),

@@ -56,13 +56,15 @@ impl Command for AttackCommand {
             );
 
         for target in targets {
-            DealDamageCommand {
-                target,
-                attacker: self.0,
-                damage: damage.damage,
-                damage_type: damage.damage_type,
+            for damage in damage.0.iter() {
+                DealDamageCommand {
+                    target,
+                    attacker: self.0,
+                    damage: damage.damage,
+                    damage_type: damage.damage_type,
+                }
+                .apply(world);
             }
-            .apply(world);
         }
     }
 }
@@ -82,13 +84,17 @@ impl Command for DealDamageCommand {
         let protection = get_protections(world, self.target, self.damage_type);
         let damage = self.damage.saturating_sub(protection);
         if damage > 0 {
-            let mut health = world
-                .get_mut::<CharacterAttribute<Health>>(self.target)
-                .unwrap();
+            let Some(mut health) = world.get_mut::<CharacterAttribute<Health>>(self.target) else {
+                warn!(
+                    "Character {:?} does not exist or is already dead",
+                    self.target
+                );
+                return;
+            };
             health.current = health.current.saturating_sub(damage);
             info!(
-                "Dealt {} damage to {:?}, remaining health is {}/{}",
-                damage, self.target, health.current, health.max
+                "Dealt {} ({:?}) damage to {:?}, remaining health is {}/{}",
+                damage, self.damage_type, self.target, health.current, health.max
             );
 
             if health.current == 0 {

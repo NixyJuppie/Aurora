@@ -89,7 +89,14 @@ pub fn draw_item_info(
             if let Some((damage, range)) = weapon {
                 draw_grid("Weapon", ui, |ui| {
                     draw_row(ui, "Damage:", |ui| {
-                        ui.label(&format!("{} ({:?})", damage.damage, damage.damage_type));
+                        ui.label(
+                            damage
+                                .0
+                                .iter()
+                                .map(|d| format!("{} ({:?})", d.damage, d.damage_type))
+                                .collect::<Vec<String>>()
+                                .join(", "),
+                        );
                     });
 
                     draw_row(ui, "Range:", |ui| {
