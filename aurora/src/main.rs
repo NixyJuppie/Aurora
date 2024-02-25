@@ -74,7 +74,21 @@ fn spawn(
     );
 
     commands.spawn(WeaponBundle {
-        name: ItemName("Fire dagger".to_string()),
+        name: ItemName("Dagger".to_string()),
+        damage: WeaponDamage(smallvec![Damage {
+            damage: 10,
+            damage_type: DamageType::Physical,
+        }]),
+        range: WeaponRange(1.5),
+        collider: Collider::cuboid(0.2, 0.1, 0.5),
+        mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
+        material: materials.add(Color::DARK_GRAY),
+        transform: Transform::from_xyz(6.0, 5.0, -2.0),
+        ..default()
+    });
+
+    commands.spawn(WeaponBundle {
+        name: ItemName("Fire Bow".to_string()),
         damage: WeaponDamage(smallvec![
             Damage {
                 damage: 10,
@@ -85,11 +99,11 @@ fn spawn(
                 damage_type: DamageType::Fire,
             }
         ]),
-        range: WeaponRange(1.5),
-        collider: Collider::cuboid(0.2, 0.1, 0.5),
-        mesh: meshes.add(Cuboid::new(0.4, 0.2, 1.0)),
-        material: materials.add(Color::DARK_GRAY),
-        transform: Transform::from_xyz(6.0, 5.0, -2.0),
+        range: WeaponRange(15.0),
+        collider: Collider::cuboid(0.4, 0.1, 0.6),
+        mesh: meshes.add(Cuboid::new(0.8, 0.2, 1.2)),
+        material: materials.add(Color::BISQUE),
+        transform: Transform::from_xyz(9.0, 5.0, -2.0),
         ..default()
     });
 
